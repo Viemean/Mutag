@@ -474,14 +474,11 @@ class MainViewModel : ViewModel() {
 
         val provider = MuTagApplication.instance.getProviderForTrack(candidate)
         val detail = provider.getTrackDetail(candidate.trackId).getOrDefault(candidate)
-        val coverBytes = CoverDownloadHelper.obtainOrCompressCover(
+        val coverBytes = CoverDownloadHelper.downloadCover(
             httpClient = httpClient,
-            targetTrack = detail,
-            localCoverBytes = EmbeddedCoverFetcher.extractCoverBytes(file),
-            localCloudTrackId = item.localFile.cloudTrackId,
-            localCloudAlbumMid = item.localFile.cloudAlbumMid,
+            trackMetadata = detail,
             provider = provider,
-        )
+        ) ?: EmbeddedCoverFetcher.extractCoverBytes(file)
 
         val payload = MetadataPayload(
             title = detail.title,

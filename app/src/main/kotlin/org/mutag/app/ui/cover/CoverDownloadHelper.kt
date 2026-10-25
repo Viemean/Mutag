@@ -149,19 +149,12 @@ object CoverDownloadHelper {
         provider: MusicMetadataProvider? = null,
     ): ByteArray? {
         if (localCoverBytes != null && localCoverBytes.isNotEmpty()) {
-            val isKnownSameCloud = (localCloudAlbumMid.isNotBlank() && localCloudAlbumMid == targetTrack.album.id) ||
-                (localCloudTrackId.isNotBlank() && localCloudTrackId == targetTrack.trackId)
+            val preferMaster = runCatching { AppSettingsManager.settingsState.value.fetchOriginalMasterCover }.getOrDefault(false)
+            val targetUrl = resolveTargetCoverUrl(targetTrack, preferMaster, provider)
+            val cloudLen = probeCoverLength(httpClient, targetUrl)
+            val isExactSameFile = cloudLen != null && cloudLen > 0L && cloudLen == localCoverBytes.size.toLong()
 
-            val isSameByProbe = if (!isKnownSameCloud) {
-                val preferMaster = runCatching { AppSettingsManager.settingsState.value.fetchOriginalMasterCover }.getOrDefault(false)
-                val targetUrl = resolveTargetCoverUrl(targetTrack, preferMaster, provider)
-                val cloudLen = probeCoverLength(httpClient, targetUrl)
-                cloudLen != null && cloudLen == localCoverBytes.size.toLong()
-            } else {
-                false
-            }
-
-            if (isKnownSameCloud || isSameByProbe) {
+            if (isExactSameFile) {
                 return compressCoverSafely(localCoverBytes)
             }
         }

@@ -126,7 +126,7 @@ class MetadataDiffDetectorTest {
     }
 
     @Test
-    fun testCoverEquivalentLevel1FastCheck() {
+    fun testCoverEquivalentRequiresProbeMatchEvenWhenCloudIdsMatch() {
         val dummyFile = File(tempDir, "song.flac")
         dummyFile.writeBytes(ByteArray(2048))
 
@@ -137,7 +137,7 @@ class MetadataDiffDetectorTest {
             lastModified = dummyFile.lastModified(),
             format = "FLAC",
             hasCover = true,
-            coverSize = 1567694L,
+            coverSize = 374653L,
             cloudTrackId = "002V5j041q0V0H",
             cloudAlbumMid = "000MkMni19ClKG",
         )
@@ -148,14 +148,25 @@ class MetadataDiffDetectorTest {
             album = AlbumMetadata(id = "000MkMni19ClKG", name = "十一月的萧邦"),
         )
 
-        val client = OkHttpClient()
-        val isEquivalent = MetadataDiffDetector.isCoverEquivalent(
+        // 探测大小一致时判定等价
+        val matchingClient = createTestClient(374653L)
+        val isEquivalentMatching = MetadataDiffDetector.isCoverEquivalent(
             local = local,
             cloud = cloud,
-            httpClient = client,
+            httpClient = matchingClient,
             preferMaster = true,
         )
-        assertTrue(isEquivalent)
+        assertTrue(isEquivalentMatching)
+
+        // 探测大小不一致时（如云端封面已更新或本地封面属于不同版本），即便 ID 相同也必须判定不等价
+        val mismatchClient = createTestClient(524288L)
+        val isEquivalentMismatch = MetadataDiffDetector.isCoverEquivalent(
+            local = local,
+            cloud = cloud,
+            httpClient = mismatchClient,
+            preferMaster = true,
+        )
+        assertFalse(isEquivalentMismatch)
     }
 
     @Test

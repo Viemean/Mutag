@@ -153,45 +153,29 @@ object MetadataDiffDetector {
         val localLastModified = file.lastModified()
         val isFileUnmodified = localFileSize == local.fileSize && localLastModified == local.lastModified
 
-        val isSameSource = if (isFileUnmodified &&
-            local.cloudTrackId.isNotBlank() &&
-            local.cloudTrackId == cloud.trackId &&
-            local.cloudAlbumMid.isNotBlank() &&
-            local.cloudAlbumMid == cloud.album.id &&
-            local.coverSize > 0L
-        ) {
-            true
-        } else {
-            val currentCoverSize = if (isFileUnmodified && local.coverSize > 0L) {
-                local.coverSize
-            } else {
-                EmbeddedCoverFetcher.extractCoverBytes(file)?.size?.toLong() ?: 0L
-            }
-
-            if (currentCoverSize <= 0L) {
-                false
-            } else {
-                val targetUrl = CoverDownloadHelper.resolveTargetCoverUrl(cloud, preferMaster)
-                if (targetUrl.isBlank()) {
-                    false
-                } else {
-                    val cloudContentLength = CoverDownloadHelper.probeCoverLength(httpClient, targetUrl)
-                    cloudContentLength != null && cloudContentLength > 0L && cloudContentLength == currentCoverSize
-                }
-            }
-        }
-
-        if (!isSameSource) {
-            return false
-        }
-
-        val effectiveCoverSize = if (isFileUnmodified && local.coverSize > 0L) {
+        val currentCoverSize = if (isFileUnmodified && local.coverSize > 0L) {
             local.coverSize
         } else {
             EmbeddedCoverFetcher.extractCoverBytes(file)?.size?.toLong() ?: 0L
         }
 
-        // 同源封面在未超出安全规格上限时判定等价；超出安全阈值时判定不等价以触发就地压缩
-        return effectiveCoverSize in 1..CoverDownloadHelper.MAX_COVER_IMAGE_SIZE
+        if (currentCoverSize <= 0L) {
+            return false
+        }
+
+        val targetUrl = CoverDownloadHelper.resolveTargetCoverUrl(cloud, preferMaster)
+        if (targetUrl.isBlank()) {
+            return false
+        }
+
+        val cloudContentLength = CoverDownloadHelper.probeCoverLength(httpClient, targetUrl)
+        val isExactSameFile = cloudContentLength != null && cloudContentLength > 0L && cloudContentLength == currentCoverSize
+
+        if (!isExactSameFile) {
+            return false
+        }
+
+        // 封面长度一致且未超出安全规格上限时判定等价；超出安全阈值时判定不等价以触发就地压缩
+        return currentCoverSize in 1..CoverDownloadHelper.MAX_COVER_IMAGE_SIZE
     }
 }

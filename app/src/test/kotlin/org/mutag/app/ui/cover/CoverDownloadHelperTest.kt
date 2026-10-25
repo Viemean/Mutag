@@ -89,7 +89,7 @@ class CoverDownloadHelperTest {
     }
 
     @Test
-    fun obtainOrCompressCoverReusesLocalBytesWhenKnownCloudMatches() {
+    fun obtainOrCompressCoverReusesLocalBytesWhenProbeMatchesSize() {
         val localBytes = ByteArray(128) { 0x33.toByte() }
         val targetTrack = TrackMetadata(
             trackId = "002V5j041q0V0H",
@@ -97,7 +97,29 @@ class CoverDownloadHelperTest {
             album = AlbumMetadata(id = "000MkMni19ClKG", name = "十一月的萧邦"),
         )
 
-        val client = OkHttpClient()
+        val client = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val req = chain.request()
+                if (req.method == "HEAD") {
+                    Response.Builder()
+                        .request(req)
+                        .protocol(Protocol.HTTP_1_1)
+                        .code(200)
+                        .message("OK")
+                        .header("Content-Length", "128")
+                        .body("".toResponseBody("image/jpeg".toMediaTypeOrNull()))
+                        .build()
+                } else {
+                    Response.Builder()
+                        .request(req)
+                        .protocol(Protocol.HTTP_1_1)
+                        .code(404)
+                        .message("Not Found")
+                        .build()
+                }
+            }
+            .build()
+
         val result = CoverDownloadHelper.obtainOrCompressCover(
             httpClient = client,
             targetTrack = targetTrack,
@@ -105,7 +127,7 @@ class CoverDownloadHelperTest {
             localCloudAlbumMid = "000MkMni19ClKG",
         )
 
-        // 本地封面大小未超出阈值，安全放行直接复用原字节
+        // 远端文件长度与本地完全一致且未超出上限，就地复用本地字节
         assertArrayEquals(localBytes, result)
     }
 }
