@@ -159,6 +159,39 @@ class MetadataDiffDetectorTest {
     }
 
     @Test
+    fun testCoverEquivalentLevel1InvalidWhenCoverOversized() {
+        val dummyFile = File(tempDir, "song.flac")
+        dummyFile.writeBytes(ByteArray(2048))
+
+        val local = AudioMetadata(
+            filePath = dummyFile.absolutePath,
+            fileName = dummyFile.name,
+            fileSize = dummyFile.length(),
+            lastModified = dummyFile.lastModified(),
+            format = "FLAC",
+            hasCover = true,
+            coverSize = 4096307L, // 超过 2.5MB 安全上限
+            cloudTrackId = "002V5j041q0V0H",
+            cloudAlbumMid = "000MkMni19ClKG",
+        )
+
+        val cloud = TrackMetadata(
+            trackId = "002V5j041q0V0H",
+            title = "夜曲",
+            album = AlbumMetadata(id = "000MkMni19ClKG", name = "十一月的萧邦"),
+        )
+
+        val client = OkHttpClient()
+        val isEquivalent = MetadataDiffDetector.isCoverEquivalent(
+            local = local,
+            cloud = cloud,
+            httpClient = client,
+            preferMaster = true,
+        )
+        assertFalse(isEquivalent)
+    }
+
+    @Test
     fun testCoverEquivalentLevel1InvalidWhenFileModified() {
         val dummyFile = File(tempDir, "song.flac")
         dummyFile.writeBytes(ByteArray(2048))
@@ -225,6 +258,40 @@ class MetadataDiffDetectorTest {
             preferMaster = false,
         )
         assertTrue(isEquivalent)
+    }
+
+    @Test
+    fun testCoverEquivalentLevel2InvalidWhenCoverOversizedEvenIfProbeMatches() {
+        val dummyFile = File(tempDir, "song.mp3")
+        dummyFile.writeBytes(ByteArray(512))
+
+        val local = AudioMetadata(
+            filePath = dummyFile.absolutePath,
+            fileName = dummyFile.name,
+            fileSize = dummyFile.length(),
+            lastModified = dummyFile.lastModified(),
+            format = "MP3",
+            hasCover = true,
+            coverSize = 4096307L, // 本地封面超标 (4000KB)
+            cloudTrackId = "",
+            cloudAlbumMid = "",
+        )
+
+        val cloud = TrackMetadata(
+            trackId = "002V5j041q0V0H",
+            title = "夜曲",
+            album = AlbumMetadata(id = "000MkMni19ClKG", name = "十一月的萧邦"),
+        )
+
+        // 远端 HEAD 探测大小与本地一致，但由于两者均超出安全阈值，应判定不等价触发就地优化
+        val client = createTestClient(4096307L)
+        val isEquivalent = MetadataDiffDetector.isCoverEquivalent(
+            local = local,
+            cloud = cloud,
+            httpClient = client,
+            preferMaster = true,
+        )
+        assertFalse(isEquivalent)
     }
 
     @Test

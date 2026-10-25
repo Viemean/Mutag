@@ -3,10 +3,12 @@ package org.mutag.core.tagger
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Path
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.mutag.core.tagger.scanner.AudioCoverExtractor
 import org.mutag.core.tagger.scanner.AudioHeaderParser
 import org.mutag.core.tagger.scanner.TagHealth
 import org.mutag.core.tagger.writer.FlacMetadataWriter
@@ -46,6 +48,7 @@ class FlacMetadataWriterTest {
         val file = tempDir.resolve("test.flac").toFile()
         createMinimalFlac(file)
 
+        val initialCover = ByteArray(100) { 0xAA.toByte() }
         val payload = MetadataPayload(
             title = "夜曲",
             artist = "周杰伦",
@@ -63,7 +66,7 @@ class FlacMetadataWriterTest {
             comment = "测试曲目",
             producer = "周杰伦",
             arranger = "林迈可",
-            coverBytes = ByteArray(100) { 0xAA.toByte() },
+            coverBytes = initialCover,
             coverMime = "image/jpeg",
             lyrics = "[00:01.00]一群嗜血的蚂蚁 被腐肉所吸引",
             cloudTrackId = "002V5j041q0V0H",
@@ -92,5 +95,35 @@ class FlacMetadataWriterTest {
         assertEquals("002V5j041q0V0H", parsed.cloudTrackId)
         assertEquals("000MkMni19ClKG", parsed.cloudAlbumMid)
         assertEquals(TagHealth.COMPLETE, parsed.tagHealth)
+
+        // 校验提取出的真实封面二进制完整性
+        val extractedCover = AudioCoverExtractor.extractCoverBytes(file)
+        assertArrayEquals(initialCover, extractedCover)
+    }
+
+    @Test
+    fun writeFlacMetadataReplacesExistingCoverCorrectly(@TempDir tempDir: Path) {
+        val file = tempDir.resolve("replace_cover.flac").toFile()
+        createMinimalFlac(file)
+
+        val coverA = ByteArray(128) { 0x11.toByte() }
+        val payloadA = MetadataPayload(
+            title = "发如雪",
+            artist = "周杰伦",
+            album = "十一月的萧邦",
+            coverBytes = coverA,
+            coverMime = "image/jpeg",
+        )
+        assertTrue(FlacMetadataWriter.write(file, payloadA))
+        assertArrayEquals(coverA, AudioCoverExtractor.extractCoverBytes(file))
+
+        // 二次覆写替换为新封面
+        val coverB = ByteArray(256) { 0x22.toByte() }
+        val payloadB = payloadA.copy(coverBytes = coverB)
+        assertTrue(FlacMetadataWriter.write(file, payloadB))
+
+        val parsed = AudioHeaderParser.parse(file)
+        assertEquals(256L, parsed.coverSize)
+        assertArrayEquals(coverB, AudioCoverExtractor.extractCoverBytes(file))
     }
 }
