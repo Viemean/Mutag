@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -115,8 +116,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
@@ -433,10 +436,38 @@ fun MainScreen(viewModel: MainViewModel, onNavigateToEdit: (String) -> Unit, onN
                                     }
                                 }
 
+                                val density = LocalDensity.current
+                                val slideDistancePx = with(density) { 36.dp.toPx() }
+                                var isNavigatingForward by remember { mutableStateOf(true) }
+                                var lastBreadcrumbsCount by remember { mutableStateOf(state.breadcrumbs.size) }
+                                var lastTrackedPath by remember { mutableStateOf(state.currentPath) }
+                                val transitionProgress = remember { Animatable(0f) }
+
+                                LaunchedEffect(state.currentPath) {
+                                    if (state.currentPath.isNotBlank() && state.currentPath != lastTrackedPath) {
+                                        isNavigatingForward = state.breadcrumbs.size >= lastBreadcrumbsCount
+                                        lastBreadcrumbsCount = state.breadcrumbs.size
+                                        lastTrackedPath = state.currentPath
+                                        transitionProgress.snapTo(if (isNavigatingForward) 1f else -1f)
+                                        transitionProgress.animateTo(
+                                            targetValue = 0f,
+                                            animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing),
+                                        )
+                                    } else {
+                                        lastBreadcrumbsCount = state.breadcrumbs.size
+                                        lastTrackedPath = state.currentPath
+                                    }
+                                }
+
                                 PullToRefreshBox(
                                     isRefreshing = state.isLoading,
                                     onRefresh = viewModel::refresh,
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .graphicsLayer {
+                                            translationX = transitionProgress.value * slideDistancePx
+                                            alpha = 1f - kotlin.math.abs(transitionProgress.value) * 0.45f
+                                        },
                                 ) {
                                     LazyColumn(
                                         state = filesListState,
@@ -454,7 +485,6 @@ fun MainScreen(viewModel: MainViewModel, onNavigateToEdit: (String) -> Unit, onN
                                                         currentScrollOffset = filesListState.firstVisibleItemScrollOffset,
                                                     )
                                                 },
-                                                modifier = Modifier.animateItem(),
                                             )
                                         }
                                         items(filteredTracks, key = { it.filePath }) { track ->
@@ -473,7 +503,6 @@ fun MainScreen(viewModel: MainViewModel, onNavigateToEdit: (String) -> Unit, onN
                                                     viewModel.toggleTrackSelection(track.filePath)
                                                 },
                                                 showFileName = state.showFileNameInFilesTab,
-                                                modifier = Modifier.animateItem(),
                                             )
                                         }
                                     }
