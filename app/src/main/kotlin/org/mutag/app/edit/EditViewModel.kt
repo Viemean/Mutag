@@ -455,7 +455,7 @@ class EditViewModel : ViewModel() {
             val currentCoverBytes = _state.value.coverBytes
             val hasExistingCover = currentCoverBytes != null && currentCoverBytes.isNotEmpty()
             val preferMaster = AppSettingsManager.settingsState.value.fetchOriginalMasterCover
-            val isCoverIdentical = if (!hasExistingCover) {
+            val isSameSource = if (!hasExistingCover) {
                 false
             } else if (_state.value.cloudAlbumMid.isNotBlank() &&
                 _state.value.cloudAlbumMid == enriched.album.id &&
@@ -468,9 +468,11 @@ class EditViewModel : ViewModel() {
                 probeLen != null && probeLen == currentCoverBytes.size.toLong()
             }
 
+            val isCoverIdentical = isSameSource && (currentCoverBytes?.size ?: 0) in 1..CoverDownloadHelper.MAX_COVER_IMAGE_SIZE
+
             val shouldDownloadCover = fields["cover"] == true &&
                 !isCoverIdentical &&
-                (enriched.coverUrl.isNotBlank() || enriched.album.id.isNotBlank())
+                (hasExistingCover || enriched.coverUrl.isNotBlank() || enriched.album.id.isNotBlank())
 
             _state.update {
                 it.copy(
@@ -558,7 +560,14 @@ class EditViewModel : ViewModel() {
             if (shouldDownloadCover) {
                 coverDownloadJob = viewModelScope.launch(Dispatchers.IO) {
                     try {
-                        val downloaded = CoverDownloadHelper.downloadCover(httpClient, enriched)
+                        val downloaded = CoverDownloadHelper.obtainOrCompressCover(
+                            httpClient = httpClient,
+                            targetTrack = enriched,
+                            localCoverBytes = currentCoverBytes,
+                            localCloudTrackId = _state.value.cloudTrackId,
+                            localCloudAlbumMid = _state.value.cloudAlbumMid,
+                            provider = provider,
+                        )
                         if (downloaded != null && downloaded.isNotEmpty()) {
                             _state.update {
                                 it.copy(
@@ -571,7 +580,7 @@ class EditViewModel : ViewModel() {
                             _state.update {
                                 it.copy(
                                     isCoverDownloading = false,
-                                    userNoticeMessage = "封面下载失败，已保留文本信息",
+                                    userNoticeMessage = "封面处理失败，已保留文本信息",
                                 )
                             }
                         }
@@ -580,7 +589,7 @@ class EditViewModel : ViewModel() {
                             _state.update {
                                 it.copy(
                                     isCoverDownloading = false,
-                                    userNoticeMessage = "封面下载失败，已保留文本信息",
+                                    userNoticeMessage = "封面处理失败，已保留文本信息",
                                 )
                             }
                         }

@@ -230,10 +230,14 @@ object BatchMatchPipeline {
                             } else {
                                 val coverBytes = if (diff.isCoverIdentical) {
                                     EmbeddedCoverFetcher.extractCoverBytes(file)
-                                } else if (detail.coverUrl.isNotBlank() || detail.album.id.isNotBlank()) {
-                                    CoverDownloadHelper.downloadCover(httpClient, detail)
                                 } else {
-                                    EmbeddedCoverFetcher.extractCoverBytes(file)
+                                    CoverDownloadHelper.obtainOrCompressCover(
+                                        httpClient = httpClient,
+                                        targetTrack = detail,
+                                        localCoverBytes = EmbeddedCoverFetcher.extractCoverBytes(file),
+                                        localCloudTrackId = track.cloudTrackId,
+                                        localCloudAlbumMid = track.cloudAlbumMid,
+                                    )
                                 }
 
                                 val payload = MetadataPayload(

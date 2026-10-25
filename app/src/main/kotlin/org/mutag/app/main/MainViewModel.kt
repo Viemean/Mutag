@@ -474,11 +474,14 @@ class MainViewModel : ViewModel() {
 
         val provider = MuTagApplication.instance.getProviderForTrack(candidate)
         val detail = provider.getTrackDetail(candidate.trackId).getOrDefault(candidate)
-        val coverBytes = if (detail.coverUrl.isNotBlank() || detail.album.id.isNotBlank()) {
-            CoverDownloadHelper.downloadCover(httpClient, detail)
-        } else {
-            EmbeddedCoverFetcher.extractCoverBytes(file)
-        }
+        val coverBytes = CoverDownloadHelper.obtainOrCompressCover(
+            httpClient = httpClient,
+            targetTrack = detail,
+            localCoverBytes = EmbeddedCoverFetcher.extractCoverBytes(file),
+            localCloudTrackId = item.localFile.cloudTrackId,
+            localCloudAlbumMid = item.localFile.cloudAlbumMid,
+            provider = provider,
+        )
 
         val payload = MetadataPayload(
             title = detail.title,
@@ -684,10 +687,14 @@ class MainViewModel : ViewModel() {
         if (!file.exists()) return
 
         val detail = provider.getTrackDetail(trackMeta.trackId).getOrDefault(trackMeta)
-        var coverBytes: ByteArray? = null
-        if (detail.coverUrl.isNotBlank() || detail.album.id.isNotBlank()) {
-            coverBytes = CoverDownloadHelper.downloadCover(httpClient, detail)
-        }
+        val coverBytes = CoverDownloadHelper.obtainOrCompressCover(
+            httpClient = httpClient,
+            targetTrack = detail,
+            localCoverBytes = EmbeddedCoverFetcher.extractCoverBytes(file),
+            localCloudTrackId = track.cloudTrackId,
+            localCloudAlbumMid = track.cloudAlbumMid,
+            provider = provider,
+        )
 
         val payload = MetadataPayload(
             title = detail.title,

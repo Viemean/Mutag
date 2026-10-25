@@ -129,6 +129,50 @@ object CoverDownloadHelper {
         }
     }
 
+    /**
+     * 获取曲目匹配封面，若本地已有等价封面则就地压缩复用，避免重复网络下载；否则从网络下载并执行安全规格压缩。
+     *
+     * @param httpClient 网络请求客户端
+     * @param targetTrack 云端曲目元数据
+     * @param localCoverBytes 本地音频已内嵌的封面字节数据
+     * @param localCloudTrackId 本地音频已记录的云端曲目 ID
+     * @param localCloudAlbumMid 本地音频已记录的云端专辑 MID
+     * @param provider 可选元数据提供商实例
+     * @return 最终合规的封面字节数组，若均不可用返回 null
+     */
+    fun obtainOrCompressCover(
+        httpClient: OkHttpClient,
+        targetTrack: TrackMetadata,
+        localCoverBytes: ByteArray?,
+        localCloudTrackId: String = "",
+        localCloudAlbumMid: String = "",
+        provider: MusicMetadataProvider? = null,
+    ): ByteArray? {
+        if (localCoverBytes != null && localCoverBytes.isNotEmpty()) {
+            val isKnownSameCloud = (localCloudAlbumMid.isNotBlank() && localCloudAlbumMid == targetTrack.album.id) ||
+                (localCloudTrackId.isNotBlank() && localCloudTrackId == targetTrack.trackId)
+
+            val isSameByProbe = if (!isKnownSameCloud) {
+                val preferMaster = runCatching { AppSettingsManager.settingsState.value.fetchOriginalMasterCover }.getOrDefault(false)
+                val targetUrl = resolveTargetCoverUrl(targetTrack, preferMaster, provider)
+                val cloudLen = probeCoverLength(httpClient, targetUrl)
+                cloudLen != null && cloudLen == localCoverBytes.size.toLong()
+            } else {
+                false
+            }
+
+            if (isKnownSameCloud || isSameByProbe) {
+                return compressCoverSafely(localCoverBytes)
+            }
+        }
+
+        if (targetTrack.coverUrl.isNotBlank() || targetTrack.album.id.isNotBlank()) {
+            return downloadCover(httpClient, targetTrack, provider)
+        }
+
+        return localCoverBytes
+    }
+
     private fun isValidBitmap(bytes: ByteArray): Boolean = try {
         val opts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)
@@ -166,6 +210,12 @@ object CoverDownloadHelper {
             val origW = opts.outWidth
             val origH = opts.outHeight
             if (origW <= 0 || origH <= 0) return coverBytes
+
+            val needsDimensionReduction = maxOf(origW, origH) > MAX_COVER_DIMENSION
+            val needsSizeCompression = coverBytes.size > MAX_COVER_IMAGE_SIZE
+            if (!needsDimensionReduction && !needsSizeCompression) {
+                return coverBytes
+            }
 
             var sampleSize = 1
             val maxSide = maxOf(origW, origH)
