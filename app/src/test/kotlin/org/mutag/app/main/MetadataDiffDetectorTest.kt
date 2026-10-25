@@ -260,4 +260,84 @@ class MetadataDiffDetectorTest {
         )
         assertFalse(isEquivalent)
     }
+
+    @Test
+    fun testMetadataEquivalentReplayGainMissingInLocal() {
+        val local = AudioMetadata(
+            filePath = "/dummy/track.mp3",
+            fileName = "track.mp3",
+            fileSize = 1000L,
+            lastModified = 2000L,
+            format = "MP3",
+            title = "夜曲",
+            artist = "周杰伦",
+            album = "十一月的萧邦",
+            replayGainTrackGain = null,
+            replayGainTrackPeak = null,
+        )
+
+        val cloud = TrackMetadata(
+            trackId = "002V5j041q0V0H",
+            title = "夜曲",
+            artists = listOf(ArtistMetadata(id = "1", name = "周杰伦")),
+            album = AlbumMetadata(id = "000MkMni19ClKG", name = "十一月的萧邦"),
+            replayGain = org.mutag.model.ReplayGainInfo(trackGainDb = -8.52, trackPeak = 0.987654),
+        )
+
+        assertFalse(MetadataDiffDetector.isMetadataEquivalent(local, cloud))
+    }
+
+    @Test
+    fun testMetadataEquivalentReplayGainMatches() {
+        val local = AudioMetadata(
+            filePath = "/dummy/track.mp3",
+            fileName = "track.mp3",
+            fileSize = 1000L,
+            lastModified = 2000L,
+            format = "MP3",
+            title = "夜曲",
+            artist = "周杰伦",
+            album = "十一月的萧邦",
+            replayGainTrackGain = -8.52,
+            replayGainTrackPeak = 0.987654,
+        )
+
+        val cloud = TrackMetadata(
+            trackId = "002V5j041q0V0H",
+            title = "夜曲",
+            artists = listOf(ArtistMetadata(id = "1", name = "周杰伦")),
+            album = AlbumMetadata(id = "000MkMni19ClKG", name = "十一月的萧邦"),
+            replayGain = org.mutag.model.ReplayGainInfo(trackGainDb = -8.52, trackPeak = 0.987654),
+        )
+
+        assertTrue(MetadataDiffDetector.isMetadataEquivalent(local, cloud))
+    }
+
+    @Test
+    fun testMetadataEquivalentLyricsMissingInLocal() {
+        val local = AudioMetadata(
+            filePath = "/dummy/track.mp3",
+            fileName = "track.mp3",
+            fileSize = 1000L,
+            lastModified = 2000L,
+            format = "MP3",
+            title = "夜曲",
+            artist = "周杰伦",
+            album = "十一月的萧邦",
+            lyrics = null,
+        )
+
+        val cloud = TrackMetadata(
+            trackId = "002V5j041q0V0H",
+            title = "夜曲",
+            artists = listOf(ArtistMetadata(id = "1", name = "周杰伦")),
+            album = AlbumMetadata(id = "000MkMni19ClKG", name = "十一月的萧邦"),
+            lyrics = org.mutag.model.SyncedLyrics(
+                rawLyricText = "[00:01.00]一群嗜血的蚂蚁被腐肉所吸引",
+                mergedLrcText = "[00:01.00]一群嗜血的蚂蚁被腐肉所吸引",
+            ),
+        )
+
+        assertFalse(MetadataDiffDetector.isMetadataEquivalent(local, cloud))
+    }
 }

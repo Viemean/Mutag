@@ -544,7 +544,7 @@ class EditViewModel : ViewModel() {
                     } else {
                         it.cloudAlbumMid
                     },
-                    replayGainTrackGain = enriched.replayGain?.let { "%.2f dB".format(it.trackGainDb) } ?: it.replayGainTrackGain,
+                    replayGainTrackGain = enriched.replayGain?.let { "%.2f".format(it.trackGainDb) } ?: it.replayGainTrackGain,
                     replayGainTrackPeak = enriched.replayGain?.let { "%.6f".format(it.trackPeak) } ?: it.replayGainTrackPeak,
                     lyrics = if (fields["lyrics"] == true && lyricsObj != null) {
                         if (lyricsObj.mergedLrcText.isNotBlank()) lyricsObj.mergedLrcText else lyricsObj.rawLyricText
@@ -729,8 +729,8 @@ class EditViewModel : ViewModel() {
                 comment = s.comment,
                 language = s.language,
                 chorusStartMs = s.chorusStartMs.toLongOrNull() ?: 0L,
-                replayGainTrackGain = s.replayGainTrackGain.toDoubleOrNull(),
-                replayGainTrackPeak = s.replayGainTrackPeak.toDoubleOrNull(),
+                replayGainTrackGain = s.replayGainTrackGain.removeSuffix("dB").removeSuffix("db").removeSuffix("DB").trim().toDoubleOrNull(),
+                replayGainTrackPeak = s.replayGainTrackPeak.trim().toDoubleOrNull(),
                 cloudTrackId = s.cloudTrackId,
                 cloudAlbumMid = s.cloudAlbumMid,
                 description = s.description,

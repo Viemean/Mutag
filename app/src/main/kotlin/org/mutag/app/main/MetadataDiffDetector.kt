@@ -88,6 +88,43 @@ object MetadataDiffDetector {
             return false
         }
 
+        if (cloud.lyricist.isNotBlank() && local.lyricist.trim() != cloud.lyricist.trim()) {
+            return false
+        }
+        if (cloud.composer.isNotBlank() && local.composer.trim() != cloud.composer.trim()) {
+            return false
+        }
+        if (cloud.arranger.isNotBlank() && local.arranger.trim() != cloud.arranger.trim()) {
+            return false
+        }
+        if (cloud.producer.isNotBlank() && local.producer.trim() != cloud.producer.trim()) {
+            return false
+        }
+        if (cloud.company.isNotBlank() && local.company.trim() != cloud.company.trim()) {
+            return false
+        }
+
+        if (cloud.chorusStartMs > 0 && local.chorusStartMs != cloud.chorusStartMs) {
+            return false
+        }
+
+        val rg = cloud.replayGain
+        if (rg != null) {
+            val localGain = local.replayGainTrackGain
+            val localPeak = local.replayGainTrackPeak
+            if (localGain == null || kotlin.math.abs(localGain - rg.trackGainDb) > 0.01) {
+                return false
+            }
+            if (localPeak == null || kotlin.math.abs(localPeak - rg.trackPeak) > 0.0001) {
+                return false
+            }
+        }
+
+        val cloudLyrics = cloud.lyrics?.rawLyricText
+        if (!cloudLyrics.isNullOrBlank() && local.lyrics.isNullOrBlank()) {
+            return false
+        }
+
         return true
     }
 

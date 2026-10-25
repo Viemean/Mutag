@@ -484,7 +484,7 @@ class MainViewModel : ViewModel() {
             title = detail.title,
             artist = detail.artistName,
             album = detail.album.name,
-            albumArtist = detail.albumArtist,
+            albumArtist = detail.albumArtist.ifBlank { item.localFile.albumArtist },
             trackNumber = detail.trackNumber,
             trackTotal = detail.trackTotal,
             discNumber = detail.discNumber,

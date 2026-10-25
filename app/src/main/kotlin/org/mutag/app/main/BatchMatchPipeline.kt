@@ -240,7 +240,7 @@ object BatchMatchPipeline {
                                     title = detail.title,
                                     artist = detail.artistName,
                                     album = detail.album.name,
-                                    albumArtist = detail.albumArtist,
+                                    albumArtist = detail.albumArtist.ifBlank { track.albumArtist },
                                     trackNumber = detail.trackNumber,
                                     trackTotal = detail.trackTotal,
                                     discNumber = detail.discNumber,

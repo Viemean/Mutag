@@ -162,6 +162,8 @@ internal object FlacHeaderParser {
         val desc = comments["DESCRIPTION"] ?: ""
         val language = comments["LANGUAGE"] ?: ""
         val chorusStart = comments["CHORUS_START"]?.toLongOrNull() ?: 0L
+        val gain = comments["REPLAYGAIN_TRACK_GAIN"]?.substringBefore(" ")?.toDoubleOrNull()
+        val peak = comments["REPLAYGAIN_TRACK_PEAK"]?.toDoubleOrNull()
 
         val durationDisplay = AudioParserUtils.formatDuration(durationMs)
         val fileSizeDisplay = AudioParserUtils.formatFileSize(fileSize)
@@ -217,6 +219,8 @@ internal object FlacHeaderParser {
             cloudTrackId = cloudId,
             cloudAlbumMid = cloudAlbumMid,
             description = desc,
+            replayGainTrackGain = gain,
+            replayGainTrackPeak = peak,
             language = language,
             chorusStartMs = chorusStart,
             durationMs = durationMs,
