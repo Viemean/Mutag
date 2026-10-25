@@ -62,8 +62,13 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            val forceDebugSigning = project.findProperty("useDebugSigning") == "true"
             val releaseSigning = signingConfigs.getByName("release")
-            signingConfig = if (releaseSigning.storeFile?.exists() == true) releaseSigning else signingConfigs.getByName("debug")
+            signingConfig = if (!forceDebugSigning && releaseSigning.storeFile?.exists() == true) {
+                releaseSigning
+            } else {
+                signingConfigs.getByName("debug")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
