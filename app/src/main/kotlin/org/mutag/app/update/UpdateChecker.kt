@@ -174,7 +174,9 @@ object UpdateChecker {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(intent)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            android.util.Log.w("UpdateChecker", "Failed to open download url: $url", e)
+            android.widget.Toast.makeText(context, "无法打开浏览器，请检查相关应用权限", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 }

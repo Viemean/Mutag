@@ -77,8 +77,8 @@ object UncertainMatchRepository {
                 targetFile.writeText(content, Charsets.UTF_8)
                 tmpFile.delete()
             }
-        } catch (_: Exception) {
-            // 写入异常静默保护，防止崩溃
+        } catch (e: Exception) {
+            android.util.Log.w("UncertainMatchRepository", "Failed to save uncertain match items", e)
         }
     }
 
@@ -142,7 +142,8 @@ object UncertainMatchRepository {
             }
 
             return validItems
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            android.util.Log.w("UncertainMatchRepository", "Failed to load uncertain match items", e)
             return emptyList()
         }
     }
@@ -165,8 +166,8 @@ object UncertainMatchRepository {
             if (targetFile.exists()) {
                 targetFile.delete()
             }
-        } catch (_: Exception) {
-            // 安全删除保护
+        } catch (e: Exception) {
+            android.util.Log.w("UncertainMatchRepository", "Failed to clear uncertain match items file", e)
         }
     }
 }

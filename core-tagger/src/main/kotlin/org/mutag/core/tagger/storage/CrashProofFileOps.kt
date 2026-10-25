@@ -49,7 +49,8 @@ object CrashProofFileOps {
                     else -> true
                 }
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            android.util.Log.w("CrashProofFileOps", "validateHeader failed for ${tempFile.name}", e)
             false
         }
     }
@@ -98,7 +99,8 @@ object CrashProofFileOps {
                     }
                 }
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            android.util.Log.e("CrashProofFileOps", "Atomic replace failed for target file: ${targetFile.name}", e)
             tempFile.delete()
             false
         }
@@ -122,12 +124,14 @@ object CrashProofFileOps {
             }
 
             if (!validateHeader(tempFile, expectedFormat)) {
+                android.util.Log.w("CrashProofFileOps", "Header validation failed for format $expectedFormat on: ${tempFile.name}")
                 tempFile.delete()
                 return false
             }
 
             return atomicReplace(tempFile, targetFile)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            android.util.Log.e("CrashProofFileOps", "executeWithCrashProof failed for ${targetFile.name}", e)
             tempFile.delete()
             return false
         }

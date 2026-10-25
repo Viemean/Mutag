@@ -244,16 +244,21 @@ object AudioSliceExtractor {
                 AcousticFingerprintExtractor.extract(resampled8k)
             } ?: return@withContext null
             AudioSliceResult(feature, actualStartSec)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            android.util.Log.w("AudioSliceExtractor", "Audio slice decode or feature extraction failed for ${audioFile.name}", e)
             null
         } finally {
             try {
                 codec?.stop()
                 codec?.release()
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                android.util.Log.d("AudioSliceExtractor", "Failed to release codec", e)
+            }
             try {
                 extractor?.release()
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                android.util.Log.d("AudioSliceExtractor", "Failed to release extractor", e)
+            }
         }
     }
 

@@ -75,7 +75,11 @@ object AudioMetadataWriter {
                     return baos.toByteArray()
                 }
             }
-        } catch (_: Exception) {}
+        } catch (_: ClassNotFoundException) {
+            // 当前非 Android 运行时环境，回退 JVM 机制
+        } catch (e: Exception) {
+            android.util.Log.w("AudioMetadataWriter", "Android bitmap compression failed, falling back", e)
+        }
 
         // 2. Try standard JVM ImageIO fallback
         try {
@@ -136,7 +140,11 @@ object AudioMetadataWriter {
                     }
                 }
             }
-        } catch (_: Exception) {}
+        } catch (_: ClassNotFoundException) {
+            // 当前非标准 JVM ImageIO 环境
+        } catch (e: Exception) {
+            android.util.Log.w("AudioMetadataWriter", "JVM ImageIO compression failed", e)
+        }
 
         return coverBytes
     }
