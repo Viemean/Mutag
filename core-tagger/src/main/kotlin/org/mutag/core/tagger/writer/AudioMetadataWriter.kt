@@ -41,7 +41,19 @@ object AudioMetadataWriter {
 
     private fun prepareSafePayload(payload: MetadataPayload): MetadataPayload {
         val cover = payload.coverBytes ?: return payload
-        if (cover.size <= MAX_COVER_IMAGE_SIZE) return payload
+        val normalizedMime = if (payload.coverMime.isNotBlank()) {
+            payload.coverMime
+        } else {
+            if (cover.size >= 8 && cover[0] == 0x89.toByte() && cover[1] == 0x50.toByte()) {
+                "image/png"
+            } else {
+                "image/jpeg"
+            }
+        }
+
+        if (cover.size <= MAX_COVER_IMAGE_SIZE) {
+            return if (normalizedMime != payload.coverMime) payload.copy(coverMime = normalizedMime) else payload
+        }
 
         val compressed = compressCoverSafely(cover)
         return payload.copy(coverBytes = compressed, coverMime = "image/jpeg")

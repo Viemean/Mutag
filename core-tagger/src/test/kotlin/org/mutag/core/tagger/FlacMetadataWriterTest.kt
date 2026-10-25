@@ -126,4 +126,27 @@ class FlacMetadataWriterTest {
         assertEquals(256L, parsed.coverSize)
         assertArrayEquals(coverB, AudioCoverExtractor.extractCoverBytes(file))
     }
+
+    @Test
+    fun writeFlacMetadataNormalizesBlankCoverMime(@TempDir tempDir: Path) {
+        val file = tempDir.resolve("blank_mime.flac").toFile()
+        createMinimalFlac(file)
+
+        // 构造带有 PNG 标识头的字节
+        val pngCover = byteArrayOf(0x89.toByte(), 0x50.toByte(), 0x4E.toByte(), 0x47.toByte(), 0x0D.toByte(), 0x0A.toByte(), 0x1A.toByte(), 0x0A.toByte()) + ByteArray(64)
+        val payload = MetadataPayload(
+            title = "枫",
+            artist = "周杰伦",
+            album = "十一月的萧邦",
+            coverBytes = pngCover,
+            coverMime = "", // 传入空 MIME
+        )
+
+        assertTrue(org.mutag.core.tagger.writer.AudioMetadataWriter.writeMetadata(file, payload))
+
+        val parsed = AudioHeaderParser.parse(file)
+        assertTrue(parsed.hasCover)
+        assertEquals(pngCover.size.toLong(), parsed.coverSize)
+        assertArrayEquals(pngCover, AudioCoverExtractor.extractCoverBytes(file))
+    }
 }

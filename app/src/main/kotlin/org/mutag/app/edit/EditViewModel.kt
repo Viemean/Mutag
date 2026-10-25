@@ -443,11 +443,11 @@ class EditViewModel : ViewModel() {
         val candidate = _state.value.selectedCandidate ?: return
         val fields = _state.value.candidateDiffFields
 
-        _state.update { it.copy(showMatchDialog = false) }
+        _state.update { it.copy(showMatchDialog = false, isCoverDownloading = fields["cover"] == true) }
         coverDownloadJob?.cancel()
 
-        viewModelScope.launch(Dispatchers.IO) {
-            val provider = getProviderForCurrentSource()
+        coverDownloadJob = viewModelScope.launch(Dispatchers.IO) {
+            val provider = MuTagApplication.instance.getProviderForTrack(candidate)
             val detailResult = provider.getTrackDetail(candidate.trackId)
             val enriched = detailResult.getOrDefault(candidate)
             val lyricsObj = enriched.lyrics
@@ -455,9 +455,39 @@ class EditViewModel : ViewModel() {
             val shouldDownloadCover = fields["cover"] == true &&
                 (enriched.coverUrl.isNotBlank() || enriched.album.id.isNotBlank())
 
+            var downloadedCover: ByteArray? = null
+            var coverMime: String? = null
+
+            if (shouldDownloadCover) {
+                try {
+                    val downloaded = CoverDownloadHelper.downloadCover(
+                        httpClient = httpClient,
+                        trackMetadata = enriched,
+                        provider = provider,
+                    )
+                    if (downloaded != null && downloaded.isNotEmpty()) {
+                        downloadedCover = downloaded
+                        coverMime = if (downloaded.size >= 8 && downloaded[0] == 0x89.toByte() && downloaded[1] == 0x50.toByte()) {
+                            "image/png"
+                        } else {
+                            "image/jpeg"
+                        }
+                    } else {
+                        _state.update { it.copy(userNoticeMessage = "封面处理失败，已保留文本信息") }
+                    }
+                } catch (e: Exception) {
+                    if (e !is kotlinx.coroutines.CancellationException) {
+                        _state.update { it.copy(userNoticeMessage = "封面处理失败，已保留文本信息") }
+                    }
+                }
+            }
+
             _state.update {
                 it.copy(
-                    isCoverDownloading = shouldDownloadCover,
+                    isCoverDownloading = false,
+                    coverBytes = downloadedCover ?: it.coverBytes,
+                    coverMime = coverMime ?: it.coverMime,
+                    coverDimensionsText = downloadedCover?.let { b -> "${b.size / 1024} KB" } ?: it.coverDimensionsText,
                     title = if (fields["title"] == true && enriched.title.isNotBlank()) enriched.title else it.title,
                     artist = if (fields["artist"] == true && enriched.artistName.isNotBlank()) enriched.artistName else it.artist,
                     album = if (fields["album"] == true && enriched.album.name.isNotBlank()) enriched.album.name else it.album,
@@ -536,43 +566,6 @@ class EditViewModel : ViewModel() {
                     },
                     syncedLyrics = if (fields["lyrics"] == true && lyricsObj != null) lyricsObj else it.syncedLyrics,
                 )
-            }
-
-            if (shouldDownloadCover) {
-                coverDownloadJob = viewModelScope.launch(Dispatchers.IO) {
-                    try {
-                        val downloaded = CoverDownloadHelper.downloadCover(
-                            httpClient = httpClient,
-                            trackMetadata = enriched,
-                            provider = provider,
-                        )
-                        if (downloaded != null && downloaded.isNotEmpty()) {
-                            _state.update {
-                                it.copy(
-                                    coverBytes = downloaded,
-                                    coverDimensionsText = "${downloaded.size / 1024} KB",
-                                    isCoverDownloading = false,
-                                )
-                            }
-                        } else {
-                            _state.update {
-                                it.copy(
-                                    isCoverDownloading = false,
-                                    userNoticeMessage = "封面处理失败，已保留文本信息",
-                                )
-                            }
-                        }
-                    } catch (e: Exception) {
-                        if (e !is kotlinx.coroutines.CancellationException) {
-                            _state.update {
-                                it.copy(
-                                    isCoverDownloading = false,
-                                    userNoticeMessage = "封面处理失败，已保留文本信息",
-                                )
-                            }
-                        }
-                    }
-                }
             }
         }
     }
@@ -723,7 +716,7 @@ class EditViewModel : ViewModel() {
                 description = s.description,
                 lyrics = s.lyrics.ifBlank { null },
                 coverBytes = s.coverBytes,
-                coverMime = s.coverMime,
+                coverMime = s.coverMime.ifBlank { "image/jpeg" },
             )
 
             val success = AudioMetadataWriter.writeMetadata(file, payload)
