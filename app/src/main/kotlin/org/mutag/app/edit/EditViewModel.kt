@@ -846,9 +846,13 @@ class EditViewModel : ViewModel() {
      * @param rawBytes 待替换的图像字节数组
      */
     fun replaceCover(rawBytes: ByteArray) {
-        val maxSizeBytes = 3 * 1024 * 1024
-        val safeBytes = if (rawBytes.size > maxSizeBytes) {
-            compressCoverBytesSafely(rawBytes, maxSizeBytes)
+        val maxSizeBytes = CoverDownloadHelper.MAX_COVER_IMAGE_SIZE
+        val maxDimension = CoverDownloadHelper.MAX_COVER_DIMENSION
+        val opts = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        android.graphics.BitmapFactory.decodeByteArray(rawBytes, 0, rawBytes.size, opts)
+        val needsCompress = rawBytes.size > maxSizeBytes || maxOf(opts.outWidth, opts.outHeight) > maxDimension
+        val safeBytes = if (needsCompress) {
+            CoverDownloadHelper.compressCoverSafely(rawBytes)
         } else {
             rawBytes
         }
@@ -857,7 +861,7 @@ class EditViewModel : ViewModel() {
                 showCoverActionSheet = false,
                 coverBytes = safeBytes,
                 coverDimensionsText = "${safeBytes.size / 1024} KB",
-                userNoticeMessage = if (rawBytes.size > maxSizeBytes) "图片已执行保真压缩至 3MB 内" else null,
+                userNoticeMessage = if (needsCompress) "图片已保真优化至 3000px / 2.5MB 内" else null,
             )
         }
     }
@@ -889,23 +893,6 @@ class EditViewModel : ViewModel() {
      */
     fun clearUserNotice() {
         _state.update { it.copy(userNoticeMessage = null) }
-    }
-
-    private fun compressCoverBytesSafely(bytes: ByteArray, maxSizeBytes: Int): ByteArray {
-        return try {
-            val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return bytes
-            val baos = java.io.ByteArrayOutputStream()
-            var quality = 95
-            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, quality, baos)
-            while (baos.size() > maxSizeBytes && quality > 60) {
-                baos.reset()
-                quality -= 10
-                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, quality, baos)
-            }
-            if (baos.size() in 1..maxSizeBytes) baos.toByteArray() else bytes
-        } catch (_: Exception) {
-            bytes
-        }
     }
 
     /**

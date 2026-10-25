@@ -2,6 +2,7 @@ package org.mutag.app.edit
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.ExperimentalFoundationApi
+import org.mutag.app.ui.cover.CoverDownloadHelper
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -80,11 +81,7 @@ fun CoverActionBottomSheet(
 
     val thumbBitmap = remember(state.coverBytes) {
         state.coverBytes?.let {
-            try {
-                BitmapFactory.decodeByteArray(it, 0, it.size)
-            } catch (_: Exception) {
-                null
-            }
+            CoverDownloadHelper.decodeSampledBitmap(it, 512)
         }
     }
 
@@ -233,7 +230,7 @@ fun FullCoverViewerDialog(coverBytes: ByteArray, onDismiss: () -> Unit, onLongPr
             val w = opts.outWidth
             val h = opts.outHeight
             val kb = coverBytes.size / 1024.0
-            val bmp = BitmapFactory.decodeByteArray(coverBytes, 0, coverBytes.size)
+            val bmp = CoverDownloadHelper.decodeSampledBitmap(coverBytes, 1024)
             "$w × $h · %.1f KB".format(kb) to bmp
         } catch (_: Exception) {
             "${coverBytes.size / 1024} KB" to null

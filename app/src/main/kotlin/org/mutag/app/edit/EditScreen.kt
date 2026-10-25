@@ -2,6 +2,7 @@ package org.mutag.app.edit
 
 import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
+import org.mutag.app.ui.cover.CoverDownloadHelper
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -378,11 +379,7 @@ private fun CoverHeader(
 ) {
     val bitmap = remember(state.coverBytes) {
         state.coverBytes?.let {
-            try {
-                BitmapFactory.decodeByteArray(it, 0, it.size)
-            } catch (_: Exception) {
-                null
-            }
+            CoverDownloadHelper.decodeSampledBitmap(it, 1024)
         }
     }
 

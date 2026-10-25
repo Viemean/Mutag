@@ -9,7 +9,7 @@ import java.io.FileInputStream
  * 音频标签回写顶层分发器。
  */
 object AudioMetadataWriter {
-    private const val MAX_COVER_IMAGE_SIZE = 3 * 1024 * 1024
+    private const val MAX_COVER_IMAGE_SIZE = (2.5 * 1024 * 1024).toInt() // 2.5 MB
 
     /**
      * 将编辑后的元数据载荷安全回写至物理音频文件。

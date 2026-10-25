@@ -16,7 +16,9 @@ import org.mutag.provider.api.MusicMetadataProvider
  */
 object CoverDownloadHelper {
 
-    private const val MAX_COVER_IMAGE_SIZE = 3 * 1024 * 1024 // 3 MB
+    const val MAX_COVER_IMAGE_SIZE = (2.5 * 1024 * 1024).toInt() // 2.5 MB
+    const val MAX_COVER_DIMENSION = 3000
+    const val DEFAULT_UI_SAMPLE_DIMENSION = 1024
 
     /**
      * 根据设置与曲目元数据计算预期的云端封面下载直链。
@@ -115,7 +117,12 @@ object CoverDownloadHelper {
 
         val rawBytes = downloadedBytes ?: return null
 
-        return if (rawBytes.size > MAX_COVER_IMAGE_SIZE) {
+        val opts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(rawBytes, 0, rawBytes.size, opts)
+        val needsDimensionReduction = maxOf(opts.outWidth, opts.outHeight) > MAX_COVER_DIMENSION
+        val needsSizeCompression = rawBytes.size > MAX_COVER_IMAGE_SIZE
+
+        return if (needsDimensionReduction || needsSizeCompression) {
             compressCoverSafely(rawBytes)
         } else {
             rawBytes
@@ -146,9 +153,41 @@ object CoverDownloadHelper {
         null
     }
 
-    private fun compressCoverSafely(coverBytes: ByteArray): ByteArray {
+    /**
+     * 将封面图像字节压缩至 2.5MB 内，并限制最大边长不超过 3000 像素。
+     *
+     * @param coverBytes 原始封面字节数组
+     * @return 压缩与缩放后的图片字节数组
+     */
+    fun compressCoverSafely(coverBytes: ByteArray): ByteArray {
         return try {
-            var bitmap = BitmapFactory.decodeByteArray(coverBytes, 0, coverBytes.size) ?: return coverBytes
+            val opts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeByteArray(coverBytes, 0, coverBytes.size, opts)
+            val origW = opts.outWidth
+            val origH = opts.outHeight
+            if (origW <= 0 || origH <= 0) return coverBytes
+
+            var sampleSize = 1
+            val maxSide = maxOf(origW, origH)
+            while (maxSide / (sampleSize * 2) >= MAX_COVER_DIMENSION) {
+                sampleSize *= 2
+            }
+
+            val decodeOpts = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+            var bitmap = BitmapFactory.decodeByteArray(coverBytes, 0, coverBytes.size, decodeOpts) ?: return coverBytes
+
+            val curMaxSide = maxOf(bitmap.width, bitmap.height)
+            if (curMaxSide > MAX_COVER_DIMENSION) {
+                val scale = MAX_COVER_DIMENSION.toFloat() / curMaxSide
+                val targetW = (bitmap.width * scale).toInt().coerceAtLeast(1)
+                val targetH = (bitmap.height * scale).toInt().coerceAtLeast(1)
+                val scaled = Bitmap.createScaledBitmap(bitmap, targetW, targetH, true)
+                if (scaled != bitmap) {
+                    bitmap.recycle()
+                    bitmap = scaled
+                }
+            }
+
             val baos = ByteArrayOutputStream()
             var quality = 95
             bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos)
@@ -160,7 +199,7 @@ object CoverDownloadHelper {
             }
 
             while (baos.size() > MAX_COVER_IMAGE_SIZE && bitmap.width > 1200 && bitmap.height > 1200) {
-                val scale = 0.8f
+                val scale = 0.85f
                 val scaled = Bitmap.createScaledBitmap(
                     bitmap,
                     (bitmap.width * scale).toInt().coerceAtLeast(1),
@@ -184,6 +223,38 @@ object CoverDownloadHelper {
             coverBytes
         } catch (_: OutOfMemoryError) {
             coverBytes
+        }
+    }
+
+    /**
+     * 按目标最大边长对图像字节进行采样率下采样解码，防止超大位图撑爆 Canvas。
+     *
+     * @param bytes 图像原始字节数组
+     * @param maxDimension 目标最大边长物理像素（默认 1024）
+     * @return 采样解码后的 Bitmap，失败返回 null
+     */
+    fun decodeSampledBitmap(bytes: ByteArray, maxDimension: Int = DEFAULT_UI_SAMPLE_DIMENSION): Bitmap? {
+        if (bytes.isEmpty()) return null
+        return try {
+            val opts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)
+            if (opts.outWidth <= 0 || opts.outHeight <= 0) return null
+
+            var sampleSize = 1
+            val maxSide = maxOf(opts.outWidth, opts.outHeight)
+            while (maxSide / (sampleSize * 2) >= maxDimension) {
+                sampleSize *= 2
+            }
+
+            val decodeOpts = BitmapFactory.Options().apply {
+                inSampleSize = sampleSize
+                inPreferredConfig = Bitmap.Config.ARGB_8888
+            }
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, decodeOpts)
+        } catch (_: Exception) {
+            null
+        } catch (_: OutOfMemoryError) {
+            null
         }
     }
 }
