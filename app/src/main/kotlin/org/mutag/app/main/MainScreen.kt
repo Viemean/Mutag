@@ -55,8 +55,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.Sort
@@ -91,6 +93,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -98,7 +101,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -108,7 +111,10 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.drop
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -791,7 +797,7 @@ fun MainScreen(viewModel: MainViewModel, onNavigateToEdit: (String) -> Unit, onN
 
     // 排序 BottomSheet
     if (state.showSortBottomSheet) {
-        val sheetState = rememberModalBottomSheetState()
+        val sheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
         ModalBottomSheet(
             onDismissRequest = viewModel::dismissSortBottomSheet,
             sheetState = sheetState,
@@ -1001,6 +1007,20 @@ private fun FloatingSearchPill(query: String, onQueryChange: (String) -> Unit, m
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val textFieldState = rememberTextFieldState(initialText = query)
+    val currentOnQueryChange by rememberUpdatedState(onQueryChange)
+
+    LaunchedEffect(textFieldState) {
+        snapshotFlow { textFieldState.text.toString() }
+            .drop(1)
+            .collect { currentOnQueryChange(it) }
+    }
+
+    LaunchedEffect(query) {
+        if (textFieldState.text.toString() != query) {
+            textFieldState.setTextAndPlaceCursorAtEnd(query)
+        }
+    }
 
     // 展开时拦截系统返回键：收起搜索框而不是退出应用
     BackHandler(enabled = isExpanded) {
@@ -1051,28 +1071,25 @@ private fun FloatingSearchPill(query: String, onQueryChange: (String) -> Unit, m
                         modifier = Modifier.size(18.dp),
                     )
                     BasicTextField(
-                        value = query,
-                        onValueChange = onQueryChange,
-                        singleLine = true,
+                        state = textFieldState,
+                        lineLimits = TextFieldLineLimits.SingleLine,
                         textStyle = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.onSurface,
                         ),
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(
-                            onSearch = {
-                                keyboardController?.hide()
-                                focusManager.clearFocus()
-                            },
-                        ),
-                        decorationBox = { innerTextField ->
+                        onKeyboardAction = {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                        },
+                        decorator = { innerTextField ->
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .padding(horizontal = 6.dp),
                                 contentAlignment = Alignment.CenterStart,
                             ) {
-                                if (query.isEmpty()) {
+                                if (textFieldState.text.isEmpty()) {
                                     Text(
                                         text = "过滤曲目...",
                                         style = MaterialTheme.typography.bodyMedium,

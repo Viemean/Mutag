@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -26,10 +27,13 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.drop
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,10 +66,16 @@ fun BatchRenameDialog(
 
     var selectedPattern by remember { mutableStateOf("@2 - @1") }
     var isCustom by remember { mutableStateOf(false) }
-    var customPattern by remember { mutableStateOf("") }
+    val customPatternState = rememberTextFieldState()
     var renameAssociated by remember { mutableStateOf(true) }
 
-    val effectivePattern = if (isCustom) customPattern else selectedPattern
+    LaunchedEffect(customPatternState) {
+        snapshotFlow { customPatternState.text.toString() }
+            .drop(1)
+            .collect { isCustom = true }
+    }
+
+    val effectivePattern = if (isCustom) customPatternState.text.toString() else selectedPattern
 
     val previewNewName = remember(targetTracks, effectivePattern) {
         val first = targetTracks.firstOrNull()
@@ -164,20 +174,16 @@ fun BatchRenameDialog(
                             .padding(start = 4.dp),
                     ) {
                         BasicTextField(
-                            value = customPattern,
-                            onValueChange = {
-                                customPattern = it
-                                isCustom = true
-                            },
+                            state = customPatternState,
                             textStyle = MaterialTheme.typography.bodyMedium.copy(
                                 color = MaterialTheme.colorScheme.onSurface,
                             ),
                             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                             modifier = Modifier.fillMaxWidth(),
-                            decorationBox = { innerTextField ->
+                            decorator = { innerTextField ->
                                 Column {
                                     Box(modifier = Modifier.padding(bottom = 4.dp)) {
-                                        if (customPattern.isEmpty()) {
+                                        if (customPatternState.text.isEmpty()) {
                                             Text(
                                                 text = "如 @2 - @1",
                                                 style = MaterialTheme.typography.bodyMedium,

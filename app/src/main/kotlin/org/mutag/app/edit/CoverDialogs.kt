@@ -35,8 +35,9 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -76,7 +77,10 @@ fun CoverActionBottomSheet(
     onPlayAudio: () -> Unit,
     onRemoveCover: () -> Unit,
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
+    )
     val hasCover = state.coverBytes != null && state.coverBytes.isNotEmpty()
 
     val thumbBitmap = remember(state.coverBytes) {
@@ -154,60 +158,66 @@ fun CoverActionBottomSheet(
             // 菜单选项
             if (hasCover) {
                 ListItem(
-                    headlineContent = { Text("查看大图", fontSize = 14.sp, fontWeight = FontWeight.Medium) },
                     leadingContent = {
                         Icon(imageVector = Icons.Default.ZoomIn, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     },
                     modifier = Modifier.clickable { onViewFullCover() },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                )
+                ) {
+                    Text("查看大图", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                }
 
                 ListItem(
-                    headlineContent = { Text("保存图片", fontSize = 14.sp, fontWeight = FontWeight.Medium) },
                     leadingContent = {
                         Icon(imageVector = Icons.Default.FileDownload, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     },
                     modifier = Modifier.clickable { onSaveCover() },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                )
+                ) {
+                    Text("保存图片", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                }
             }
 
             ListItem(
-                headlineContent = { Text("更换图片", fontSize = 14.sp, fontWeight = FontWeight.Medium) },
                 leadingContent = {
                     Icon(imageVector = Icons.Default.Image, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 },
                 modifier = Modifier.clickable { onPickCover() },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            )
+            ) {
+                Text("更换图片", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            }
 
             ListItem(
-                headlineContent = { Text("查看歌曲信息", fontSize = 14.sp, fontWeight = FontWeight.Medium) },
                 leadingContent = {
                     Icon(imageVector = Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 },
                 modifier = Modifier.clickable { onViewTechSpec() },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            )
+            ) {
+                Text("查看歌曲信息", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            }
 
             ListItem(
-                headlineContent = { Text("播放音乐", fontSize = 14.sp, fontWeight = FontWeight.Medium) },
                 leadingContent = {
                     Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 },
                 modifier = Modifier.clickable { onPlayAudio() },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            )
+            ) {
+                Text("播放音乐", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            }
 
             if (hasCover) {
                 ListItem(
-                    headlineContent = { Text("移除封面", fontSize = 14.sp, color = MaterialTheme.colorScheme.error) },
                     leadingContent = {
                         Icon(imageVector = Icons.Default.DeleteOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                     },
                     modifier = Modifier.clickable { onRemoveCover() },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                )
+                ) {
+                    Text("移除封面", fontSize = 14.sp, color = MaterialTheme.colorScheme.error)
+                }
             }
         }
     }
