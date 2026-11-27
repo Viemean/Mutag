@@ -170,11 +170,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
                     SettingsSwitchRow(
                         icon = Icons.Rounded.Contrast,
                         title = "AMOLED 纯黑背景",
-                        subtitle = if (state.themeMode == ThemeMode.LIGHT) {
-                            "当前处于浅色模式，切换至深色后生效"
-                        } else {
-                            "深色模式下使用纯黑底色降低功耗"
-                        },
+                        subtitle = "深色模式下使用纯黑底色降低功耗",
                         checked = state.amoledBlack,
                         onCheckedChange = viewModel::setAmoledBlack,
                     )
@@ -418,7 +414,7 @@ private fun <T> SlidingSegmentedControl(
             .fillMaxWidth()
             .height(height),
         shape = RoundedCornerShape(height / 2),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
         BoxWithConstraints(
             modifier = Modifier
@@ -444,8 +440,8 @@ private fun <T> SlidingSegmentedControl(
                     .width(itemWidth)
                     .fillMaxHeight(),
                 shape = RoundedCornerShape((height - padding * 2) / 2),
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                shadowElevation = 0.5.dp,
+                color = MaterialTheme.colorScheme.primary,
+                shadowElevation = 1.dp,
             ) {}
 
             Row(modifier = Modifier.fillMaxSize()) {
@@ -453,7 +449,7 @@ private fun <T> SlidingSegmentedControl(
                     val isSelected = item == selectedItem
                     val animatedContentColor by animateColorAsState(
                         targetValue = if (isSelected) {
-                            MaterialTheme.colorScheme.onSecondaryContainer
+                            MaterialTheme.colorScheme.onPrimary
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant
                         },

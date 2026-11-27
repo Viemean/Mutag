@@ -18,7 +18,7 @@ enum class ThemeMode(val title: String) {
  * @param title 数据源名称文本
  */
 enum class MetadataSource(val id: String, val title: String) {
-    QQ_MUSIC("qqmusic", "QQ 音乐 (默认)"),
+    QQ_MUSIC("qqmusic", "QQ 音乐"),
     NETEASE("netease", "网易云音乐"),
 }
 
