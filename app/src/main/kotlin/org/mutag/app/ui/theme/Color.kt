@@ -8,7 +8,7 @@ val ColorSurfaceVariant = Color(0xFFF0F2F8)
 val ColorDivider = Color(0xFFE7E0EC)
 val ColorBorder = Color(0xFFE2E6F0)
 
-val ColorPrimary = Color(0xFF6750A4)
+val ColorPrimary = Color(0xFF4285F4)
 val ColorPrimaryLight = Color(0xFFEADDFF)
 val ColorOnPrimaryLight = Color(0xFF21005D)
 

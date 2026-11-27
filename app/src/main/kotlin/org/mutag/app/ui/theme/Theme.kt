@@ -59,7 +59,7 @@ fun MuTagTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     dynamicColor: Boolean = true,
     amoledBlack: Boolean = false,
-    seedColor: Color = Color(0xFF6750A4),
+    seedColor: Color = Color(0xFF4285F4),
     content: @Composable () -> Unit,
 ) {
     val darkTheme = when (themeMode) {

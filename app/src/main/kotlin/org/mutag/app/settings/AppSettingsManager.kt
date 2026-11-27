@@ -47,7 +47,7 @@ object AppSettingsManager {
         val themeMode = runCatching { ThemeMode.valueOf(themeModeName) }.getOrDefault(ThemeMode.SYSTEM)
         val dynamicColor = sp.getBoolean(KEY_DYNAMIC_COLOR, true)
         val amoledBlack = sp.getBoolean(KEY_AMOLED_BLACK, false)
-        val themeColor = sp.getLong(KEY_THEME_COLOR, 0xFF6750A4L)
+        val themeColor = sp.getLong(KEY_THEME_COLOR, 0xFF4285F4L)
         val isCustomThemeColor = sp.getBoolean(KEY_IS_CUSTOM_THEME_COLOR, false)
 
         val sourceName = sp.getString(KEY_PREFERRED_SOURCE, MetadataSource.QQ_MUSIC.name) ?: MetadataSource.QQ_MUSIC.name

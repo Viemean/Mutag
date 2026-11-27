@@ -45,7 +45,7 @@ data class ThemeColorPreset(val name: String, val color: Long)
  * Google 官方推荐标准基线预设配色列表。
  */
 val DEFAULT_THEME_PRESETS = listOf(
-    ThemeColorPreset("极光紫", 0xFF6750A4L),
+    ThemeColorPreset("谷歌蓝", 0xFF4285F4L),
     ThemeColorPreset("海洋蓝", 0xFF0061A4L),
     ThemeColorPreset("森林绿", 0xFF386A20L),
     ThemeColorPreset("暖阳金", 0xFF825500L),
@@ -74,7 +74,7 @@ data class SettingsState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = false,
     val amoledBlack: Boolean = false,
-    val themeColor: Long = 0xFF6750A4L,
+    val themeColor: Long = 0xFF4285F4L,
     val isCustomThemeColor: Boolean = false,
     val preferredSource: MetadataSource = MetadataSource.QQ_MUSIC,
     val dualSourceFallback: Boolean = true,
