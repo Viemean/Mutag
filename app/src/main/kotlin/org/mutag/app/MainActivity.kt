@@ -3,6 +3,7 @@ package org.mutag.app
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -193,18 +194,26 @@ fun MuTagAppNavigation(openUncertain: Boolean = false, testUpdateInfo: org.mutag
                 editViewModel.loadFile(decodedPath)
             }
 
+            val handleEditBack = {
+                if (editViewModel.state.value.saveSuccess == true) {
+                    mainViewModel.onTrackManuallySaved(decodedPath)
+                }
+                navController.popBackStack()
+                Unit
+            }
+
+            BackHandler(onBack = handleEditBack)
+
             EditScreen(
                 viewModel = editViewModel,
-                onNavigateBack = {
-                    if (editViewModel.state.value.saveSuccess == true) {
-                        mainViewModel.onTrackManuallySaved(decodedPath)
-                    }
-                    navController.popBackStack()
-                },
+                onNavigateBack = handleEditBack,
             )
         }
 
         composable("settings") {
+            BackHandler {
+                navController.popBackStack()
+            }
             SettingsScreen(
                 viewModel = settingsViewModel,
                 onNavigateBack = { navController.popBackStack() },
