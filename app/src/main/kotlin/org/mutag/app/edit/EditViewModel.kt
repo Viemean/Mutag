@@ -709,7 +709,9 @@ class EditViewModel : ViewModel() {
                 comment = s.comment,
                 language = s.language,
                 chorusStartMs = s.chorusStartMs.toLongOrNull() ?: 0L,
-                replayGainTrackGain = s.replayGainTrackGain.removeSuffix("dB").removeSuffix("db").removeSuffix("DB").trim().toDoubleOrNull(),
+                replayGainTrackGain = s.replayGainTrackGain.removeSuffix(
+                    "dB",
+                ).removeSuffix("db").removeSuffix("DB").trim().toDoubleOrNull(),
                 replayGainTrackPeak = s.replayGainTrackPeak.trim().toDoubleOrNull(),
                 cloudTrackId = s.cloudTrackId,
                 cloudAlbumMid = s.cloudAlbumMid,

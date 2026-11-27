@@ -2,7 +2,6 @@ package org.mutag.app.edit
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.ExperimentalFoundationApi
-import org.mutag.app.ui.cover.CoverDownloadHelper
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -51,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import org.mutag.app.ui.cover.CoverDownloadHelper
 
 /**
  * 封面操作底栏菜单组件（支持全屏查看、导出相册、替换、移除与技术规格查看）。

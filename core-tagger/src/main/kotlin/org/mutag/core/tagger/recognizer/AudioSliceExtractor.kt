@@ -43,7 +43,7 @@ object AudioSliceExtractor {
     fun calculateSlicePlan(durationMs: Long, preferredStartMs: Long = 0L): SlicePlan {
         val totalSec = durationMs / 1000.0
 
-        // 1. 若指定了有效副歌时间戳且位于安全时长内，优先在副歌起点截取
+        // 若指定了有效副歌时间戳且位于安全时长内，优先在副歌起点截取
         if (preferredStartMs > 0L) {
             val prefSec = preferredStartMs / 1000.0
             if (prefSec + TARGET_DURATION_SEC <= totalSec) {
@@ -51,7 +51,7 @@ object AudioSliceExtractor {
             }
         }
 
-        // 2. 依据时长动态选取人声黄金区间，避开前奏纯乐器伴奏段
+        // 依据时长动态选取人声黄金区间，避开前奏纯乐器伴奏段
         val startSec = when {
             totalSec >= 90.0 -> minOf(totalSec * 0.3, 60.0)
 

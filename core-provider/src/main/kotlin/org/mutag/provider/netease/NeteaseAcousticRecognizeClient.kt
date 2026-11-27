@@ -59,16 +59,14 @@ class NeteaseAcousticRecognizeClient(private val client: OkHttpClient = defaultC
         runCatching {
             if (feature.data.isEmpty()) return@runCatching null
 
-            // 1. zlib deflate 压缩 (level 6)
             val compressed = compressDeflate(feature.data, 6)
 
-            // 2. AES-128-ECB 加密 (PKCS5/PKCS7 填充)
+            // AES-128-ECB 加密 (PKCS5/PKCS7 填充)
             val keySpec = SecretKeySpec(AES_KEY_BYTES, "AES")
             val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
             cipher.init(Cipher.ENCRYPT_MODE, keySpec)
             val encrypted = cipher.doFinal(compressed)
 
-            // 3. Base64 编码
             val rawdataB64 = Base64.getEncoder().encodeToString(encrypted)
 
             val durationSec = if (feature.duration > 0f) feature.duration.toInt().toString() else "6"

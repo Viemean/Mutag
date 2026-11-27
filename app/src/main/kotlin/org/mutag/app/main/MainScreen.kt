@@ -114,7 +114,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import kotlinx.coroutines.flow.drop
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -138,6 +137,7 @@ import coil3.compose.AsyncImage
 import java.io.File
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import org.mutag.app.ui.cover.EmbeddedAudioCover
 import org.mutag.core.tagger.scanner.AudioMetadata
@@ -388,7 +388,6 @@ fun MainScreen(viewModel: MainViewModel, onNavigateToEdit: (String) -> Unit, onN
             Column(
                 modifier = Modifier.fillMaxSize(),
             ) {
-                // 3. 顶级分类导航栏 (4 个 Tab)
                 PrimaryTabBar(
                     selectedTab = MainTab.entries[pagerState.currentPage],
                     onTabSelect = { tab ->

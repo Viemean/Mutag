@@ -133,7 +133,18 @@ class FlacMetadataWriterTest {
         createMinimalFlac(file)
 
         // 构造带有 PNG 标识头的字节
-        val pngCover = byteArrayOf(0x89.toByte(), 0x50.toByte(), 0x4E.toByte(), 0x47.toByte(), 0x0D.toByte(), 0x0A.toByte(), 0x1A.toByte(), 0x0A.toByte()) + ByteArray(64)
+        val pngCover =
+            byteArrayOf(
+                0x89.toByte(),
+                0x50.toByte(),
+                0x4E.toByte(),
+                0x47.toByte(),
+                0x0D.toByte(),
+                0x0A.toByte(),
+                0x1A.toByte(),
+                0x0A.toByte(),
+            ) +
+                ByteArray(64)
         val payload = MetadataPayload(
             title = "枫",
             artist = "周杰伦",

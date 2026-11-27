@@ -126,14 +126,13 @@ data class SyncedLyrics(
      * 按是否开启增强型 LRC 偏好返回对应的歌词文本。
      * 若开启增强型 LRC 但当前曲目无逐字歌词，则自动回退到标准合并歌词或原始歌词。
      */
-    fun preferredText(useEnhanced: Boolean): String =
-        if (useEnhanced && enhancedLrcText.isNotBlank()) {
-            enhancedLrcText
-        } else if (mergedLrcText.isNotBlank()) {
-            mergedLrcText
-        } else {
-            rawLyricText
-        }
+    fun preferredText(useEnhanced: Boolean): String = if (useEnhanced && enhancedLrcText.isNotBlank()) {
+        enhancedLrcText
+    } else if (mergedLrcText.isNotBlank()) {
+        mergedLrcText
+    } else {
+        rawLyricText
+    }
 }
 
 /**

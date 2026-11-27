@@ -60,7 +60,7 @@ object AudioMetadataWriter {
     }
 
     private fun compressCoverSafely(coverBytes: ByteArray): ByteArray {
-        // 1. Try Android BitmapFactory if available
+        // Try Android BitmapFactory if available
         try {
             val bitmapClass = Class.forName("android.graphics.BitmapFactory")
             val decodeMethod = bitmapClass.getMethod(
@@ -93,7 +93,7 @@ object AudioMetadataWriter {
             android.util.Log.w("AudioMetadataWriter", "Android bitmap compression failed, falling back", e)
         }
 
-        // 2. Try standard JVM ImageIO fallback
+        // Try standard JVM ImageIO fallback
         try {
             val imageIoClass = Class.forName("javax.imageio.ImageIO")
             val readMethod = imageIoClass.getMethod("read", java.io.InputStream::class.java)

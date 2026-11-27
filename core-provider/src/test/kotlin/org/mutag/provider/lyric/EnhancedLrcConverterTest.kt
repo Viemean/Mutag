@@ -26,7 +26,10 @@ class EnhancedLrcConverterTest {
 
         assertTrue(synced.hasTranslation)
         assertEquals("[00:01.00]晴天\n[00:03.00]Hello & World", synced.rawLyricText)
-        assertEquals("[00:01.00]<00:01.00>晴<00:01.50>天<00:02.50>\n[00:01.00]Sunny Day\n[00:03.00]<00:03.00>Hello & World<00:04.00>", synced.enhancedLrcText)
+        assertEquals(
+            "[00:01.00]<00:01.00>晴<00:01.50>天<00:02.50>\n[00:01.00]Sunny Day\n[00:03.00]<00:03.00>Hello & World<00:04.00>",
+            synced.enhancedLrcText,
+        )
         assertEquals(synced.enhancedLrcText, synced.preferredText(useEnhanced = true))
         assertEquals(synced.mergedLrcText, synced.preferredText(useEnhanced = false))
     }

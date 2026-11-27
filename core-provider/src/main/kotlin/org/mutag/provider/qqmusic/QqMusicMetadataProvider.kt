@@ -460,8 +460,7 @@ class QqMusicMetadataProvider(private val client: OkHttpClient = defaultClient) 
         }
     }
 
-    private fun isHexCipher(s: String): Boolean =
-        s.length > 100 && s.all { it.isDigit() || it in 'a'..'f' || it in 'A'..'F' }
+    private fun isHexCipher(s: String): Boolean = s.length > 100 && s.all { it.isDigit() || it in 'a'..'f' || it in 'A'..'F' }
 
     private fun decodeLyricField(raw: String): String {
         if (raw.isBlank()) return ""

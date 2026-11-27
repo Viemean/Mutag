@@ -2,7 +2,6 @@ package org.mutag.app.edit
 
 import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
-import org.mutag.app.ui.cover.CoverDownloadHelper
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -83,6 +82,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.mutag.app.ui.cover.CoverDownloadHelper
 import org.mutag.app.ui.cover.CoverExportHelper
 
 /**

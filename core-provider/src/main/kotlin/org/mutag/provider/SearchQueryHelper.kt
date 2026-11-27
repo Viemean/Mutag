@@ -190,7 +190,7 @@ object SearchQueryHelper {
                 return EvaluatedMatch(candidate, MatchConfidence.UNCERTAIN, "声学匹配时长差异较大 (${sec}秒)，疑似不同版本")
             }
 
-            // 1. 检测本地标题/文件名是否含有翻唱信息
+            // 检测本地标题/文件名是否含有翻唱信息
             val coverKeywords = listOf("cover", "covered", "翻唱", "歌ってみた")
             val targetHasCover = coverKeywords.any { targetTitle.contains(it, ignoreCase = true) }
             val candHasCover = coverKeywords.any { candidate.title.contains(it, ignoreCase = true) }
@@ -216,22 +216,19 @@ object SearchQueryHelper {
                 cleanTargetAlbum.isNotBlank() ||
                 cleanTargetAlbumArtist.isNotBlank()
 
-            // 2. 本地无标签裸文件时，声学指纹且时长在 5s 内直接采纳
+            // 本地无标签裸文件时，声学指纹且时长在 5s 内直接采纳
             if (!hasLocalMeta) {
                 return EvaluatedMatch(candidate, MatchConfidence.HIGH, "识别结果吻合 (无本地标签)")
             }
 
-            // 3. 标题重合检测
             val titleMatch = cleanTargetTitle.isNotBlank() && cleanCandTitle.isNotBlank() && (
                 cleanCandTitle.contains(cleanTargetTitle) || cleanTargetTitle.contains(cleanCandTitle)
                 )
 
-            // 4. 专辑重合检测
             val albumMatch = cleanTargetAlbum.isNotBlank() && cleanCandAlbum.isNotBlank() && (
                 cleanCandAlbum.contains(cleanTargetAlbum) || cleanTargetAlbum.contains(cleanCandAlbum)
                 )
 
-            // 5. 歌手/专辑艺术家重合检测
             fun artistMatches(target: String): Boolean {
                 if (target.isBlank() || target == "various artists" || cleanCandArtist.isBlank()) return false
                 return cleanCandArtist.contains(target) ||
@@ -244,12 +241,12 @@ object SearchQueryHelper {
             val artistMatch = artistMatches(cleanTargetArtist)
             val albumArtistMatch = artistMatches(cleanTargetAlbumArtist)
 
-            // 6. 只要 标题、专辑、歌手、专辑艺术家 中任意一个吻合，直接判为 HIGH
+            // 只要 标题、专辑、歌手、专辑艺术家 中任意一个吻合，直接判为 HIGH
             if (titleMatch || albumMatch || artistMatch || albumArtistMatch) {
                 return EvaluatedMatch(candidate, MatchConfidence.HIGH, "识别吻合 (多维度校验通过)")
             }
 
-            // 7. 本地有明确元数据但与云端全部无交集
+            // 本地有明确元数据但与云端全部无交集
             return EvaluatedMatch(
                 candidate,
                 MatchConfidence.UNCERTAIN,

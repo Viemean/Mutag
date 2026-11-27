@@ -103,7 +103,7 @@ object NeteaseFingerprintExtractor {
         val nFrames = (pcm.size - WINDOW_SIZE) / HOP_SIZE + 1
         if (nFrames < 10) return null
 
-        // 1. STFT 短时傅里叶变换与对数能量矩阵构造
+        // STFT 短时傅里叶变换与对数能量矩阵构造
         val matrix = FloatArray(BAND_BINS * nFrames)
         val fftRe = FloatArray(FFT_SIZE)
         val fftIm = FloatArray(FFT_SIZE)
@@ -134,7 +134,7 @@ object NeteaseFingerprintExtractor {
             }
         }
 
-        // 2. 阶段 1: 全局去均值
+        // 阶段 1: 全局去均值
         var sum = 0.0
         val totalElements = BAND_BINS * nFrames
         for (i in 0 until totalElements) {
@@ -145,7 +145,7 @@ object NeteaseFingerprintExtractor {
             matrix[i] -= meanVal
         }
 
-        // 3. 阶段 2: 3x3 空间局部极大值初筛
+        // 阶段 2: 3x3 空间局部极大值初筛
         val candF = IntArrayList(1024)
         val candT = IntArrayList(1024)
 
@@ -175,7 +175,7 @@ object NeteaseFingerprintExtractor {
 
         if (candF.size == 0) return null
 
-        // 4. 阶段 3: 2D 积分图 LocalMean 过滤
+        // 阶段 3: 2D 积分图 LocalMean 过滤
         val stride = nFrames + 1
         val integral = FloatArray((BAND_BINS + 1) * stride)
 
@@ -220,7 +220,7 @@ object NeteaseFingerprintExtractor {
 
         if (survivedF.size == 0) return null
 
-        // 5. 阶段 4: 2D 矩形非极大值抑制 (RtgMax 61x17, 带 Early-Exit 快速剪枝)
+        // 阶段 4: 2D 矩形非极大值抑制 (RtgMax 61x17, 带 Early-Exit 快速剪枝)
         val selectedPeaks = mutableListOf<Peak>()
 
         for (i in 0 until survivedF.size) {
@@ -255,7 +255,7 @@ object NeteaseFingerprintExtractor {
         // 容器排布规范: 按时间帧升序、频点升序排列
         selectedPeaks.sortWith(compareBy({ it.timeFrame }, { it.freqBin }))
 
-        // 6. 二进制序列化 (Little-Endian)
+        // 二进制序列化 (Little-Endian)
         val payloadSize = 4 + CLIENT_VERSION.size + 4 + 4 + 4 + 5 + 4 + CLIENT_VERSION.size + 4 + 4 + selectedPeaks.size * 12
         val bb = ByteBuffer.allocate(payloadSize).order(ByteOrder.LITTLE_ENDIAN)
 

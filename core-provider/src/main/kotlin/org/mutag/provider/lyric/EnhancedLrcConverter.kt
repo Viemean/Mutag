@@ -23,12 +23,7 @@ object EnhancedLrcConverter {
 
     private data class WordTiming(val startMs: Long, val durationMs: Long, val text: String)
 
-    private data class VerbatimLine(
-        val startMs: Long,
-        val endMs: Long,
-        val plainText: String,
-        val words: List<WordTiming>,
-    )
+    private data class VerbatimLine(val startMs: Long, val endMs: Long, val plainText: String, val words: List<WordTiming>)
 
     /**
      * 解析 QQ 音乐 QRC（XML 或纯文本）并生成包含标准 LRC 与增强型 LRC 的 [SyncedLyrics]。

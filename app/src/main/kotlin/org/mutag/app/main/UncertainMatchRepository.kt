@@ -112,17 +112,14 @@ object UncertainMatchRepository {
 
             for (dto in dtoList) {
                 val file = File(dto.filePath)
-                // 1. 文件不存在，或已被外部/用户修改则剔除
                 if (!file.exists() || file.lastModified() != dto.lastModified) {
                     hasInvalidItem = true
                     continue
                 }
 
-                // 2. 获取最新本地音频元数据
                 val localAudio = cache.get(dto.filePath, file.length(), dto.lastModified)
                     ?: AudioHeaderParser.parse(file)
 
-                // 3. 反序列化候选曲目元数据
                 val candidate = dto.candidateJson?.let {
                     runCatching { json.decodeFromString<TrackMetadata>(it) }.getOrNull()
                 }

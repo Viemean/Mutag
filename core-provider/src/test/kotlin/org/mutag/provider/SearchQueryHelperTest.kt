@@ -102,7 +102,7 @@ class SearchQueryHelperTest {
             durationMs = 240_000L,
         )
 
-        // 1. 本地标题含 covered 标记，而云端仅为原曲 -> UNCERTAIN
+        // 本地标题含 covered 标记，而云端仅为原曲 -> UNCERTAIN
         val resultCover = SearchQueryHelper.evaluateMatch(
             targetDurationMs = 240_000L,
             targetTitle = "01. Test Song - covered by Singer B",
@@ -114,7 +114,7 @@ class SearchQueryHelperTest {
         assertEquals(MatchConfidence.UNCERTAIN, resultCover.confidence)
         assertTrue(resultCover.reason.contains("翻唱"))
 
-        // 2. 本地元数据与云端全部无交集 -> UNCERTAIN
+        // 本地元数据与云端全部无交集 -> UNCERTAIN
         val resultAllMismatch = SearchQueryHelper.evaluateMatch(
             targetDurationMs = 240_000L,
             targetTitle = "Unrelated Title",
@@ -126,7 +126,7 @@ class SearchQueryHelperTest {
         assertEquals(MatchConfidence.UNCERTAIN, resultAllMismatch.confidence)
         assertTrue(resultAllMismatch.reason.contains("歌手不符"))
 
-        // 3. 歌手不符但标题吻合 -> HIGH
+        // 歌手不符但标题吻合 -> HIGH
         val resultTitleMatch = SearchQueryHelper.evaluateMatch(
             targetDurationMs = 240_000L,
             targetTitle = "Test Song",
@@ -137,7 +137,7 @@ class SearchQueryHelperTest {
         )
         assertEquals(MatchConfidence.HIGH, resultTitleMatch.confidence)
 
-        // 4. 歌手不符但专辑艺术家吻合 -> HIGH
+        // 歌手不符但专辑艺术家吻合 -> HIGH
         val resultAlbumArtistMatch = SearchQueryHelper.evaluateMatch(
             targetDurationMs = 240_000L,
             targetTitle = "Different Title",
@@ -149,7 +149,7 @@ class SearchQueryHelperTest {
         )
         assertEquals(MatchConfidence.HIGH, resultAlbumArtistMatch.confidence)
 
-        // 5. 时长差异超过 5 秒 -> UNCERTAIN
+        // 时长差异超过 5 秒 -> UNCERTAIN
         val resultDurationMismatch = SearchQueryHelper.evaluateMatch(
             targetDurationMs = 246_000L,
             targetTitle = "Test Song",
@@ -161,7 +161,7 @@ class SearchQueryHelperTest {
         assertEquals(MatchConfidence.UNCERTAIN, resultDurationMismatch.confidence)
         assertTrue(resultDurationMismatch.reason.contains("时长差异较大"))
 
-        // 6. 裸音频无标签且时长 5 秒内 -> HIGH
+        // 裸音频无标签且时长 5 秒内 -> HIGH
         val resultBareFile = SearchQueryHelper.evaluateMatch(
             targetDurationMs = 240_000L,
             targetTitle = "",

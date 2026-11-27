@@ -20,10 +20,12 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun setArtistSeparatorUpdatesState() {
+    fun setEnhancedLrcUpdatesState() {
         val vm = SettingsViewModel()
-        vm.setArtistSeparator("; ")
-        assertEquals("; ", vm.state.value.artistSeparator)
+        vm.setEnhancedLrc(true)
+        assertEquals(true, vm.state.value.enhancedLrc)
+        vm.setEnhancedLrc(false)
+        assertEquals(false, vm.state.value.enhancedLrc)
     }
 
     @Test

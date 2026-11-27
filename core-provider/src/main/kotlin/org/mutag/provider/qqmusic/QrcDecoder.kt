@@ -112,14 +112,62 @@ object QrcDecoder {
     }
 
     private fun inversePermutation(s0: Int, s1: Int, out: ByteArray, offset: Int) {
-        out[offset + 3] = (bitnumIntr(s1, 7, 7) or bitnumIntr(s0, 7, 6) or bitnumIntr(s1, 15, 5) or bitnumIntr(s0, 15, 4) or bitnumIntr(s1, 23, 3) or bitnumIntr(s0, 23, 2) or bitnumIntr(s1, 31, 1) or bitnumIntr(s0, 31, 0)).toByte()
-        out[offset + 2] = (bitnumIntr(s1, 6, 7) or bitnumIntr(s0, 6, 6) or bitnumIntr(s1, 14, 5) or bitnumIntr(s0, 14, 4) or bitnumIntr(s1, 22, 3) or bitnumIntr(s0, 22, 2) or bitnumIntr(s1, 30, 1) or bitnumIntr(s0, 30, 0)).toByte()
-        out[offset + 1] = (bitnumIntr(s1, 5, 7) or bitnumIntr(s0, 5, 6) or bitnumIntr(s1, 13, 5) or bitnumIntr(s0, 13, 4) or bitnumIntr(s1, 21, 3) or bitnumIntr(s0, 21, 2) or bitnumIntr(s1, 29, 1) or bitnumIntr(s0, 29, 0)).toByte()
-        out[offset + 0] = (bitnumIntr(s1, 4, 7) or bitnumIntr(s0, 4, 6) or bitnumIntr(s1, 12, 5) or bitnumIntr(s0, 12, 4) or bitnumIntr(s1, 20, 3) or bitnumIntr(s0, 20, 2) or bitnumIntr(s1, 28, 1) or bitnumIntr(s0, 28, 0)).toByte()
-        out[offset + 7] = (bitnumIntr(s1, 3, 7) or bitnumIntr(s0, 3, 6) or bitnumIntr(s1, 11, 5) or bitnumIntr(s0, 11, 4) or bitnumIntr(s1, 19, 3) or bitnumIntr(s0, 19, 2) or bitnumIntr(s1, 27, 1) or bitnumIntr(s0, 27, 0)).toByte()
-        out[offset + 6] = (bitnumIntr(s1, 2, 7) or bitnumIntr(s0, 2, 6) or bitnumIntr(s1, 10, 5) or bitnumIntr(s0, 10, 4) or bitnumIntr(s1, 18, 3) or bitnumIntr(s0, 18, 2) or bitnumIntr(s1, 26, 1) or bitnumIntr(s0, 26, 0)).toByte()
-        out[offset + 5] = (bitnumIntr(s1, 1, 7) or bitnumIntr(s0, 1, 6) or bitnumIntr(s1, 9, 5) or bitnumIntr(s0, 9, 4) or bitnumIntr(s1, 17, 3) or bitnumIntr(s0, 17, 2) or bitnumIntr(s1, 25, 1) or bitnumIntr(s0, 25, 0)).toByte()
-        out[offset + 4] = (bitnumIntr(s1, 0, 7) or bitnumIntr(s0, 0, 6) or bitnumIntr(s1, 8, 5) or bitnumIntr(s0, 8, 4) or bitnumIntr(s1, 16, 3) or bitnumIntr(s0, 16, 2) or bitnumIntr(s1, 24, 1) or bitnumIntr(s0, 24, 0)).toByte()
+        out[offset + 3] =
+            (
+                bitnumIntr(s1, 7, 7) or bitnumIntr(s0, 7, 6) or bitnumIntr(s1, 15, 5) or bitnumIntr(s0, 15, 4) or bitnumIntr(s1, 23, 3) or
+                    bitnumIntr(s0, 23, 2) or
+                    bitnumIntr(s1, 31, 1) or
+                    bitnumIntr(s0, 31, 0)
+                ).toByte()
+        out[offset + 2] =
+            (
+                bitnumIntr(s1, 6, 7) or bitnumIntr(s0, 6, 6) or bitnumIntr(s1, 14, 5) or bitnumIntr(s0, 14, 4) or bitnumIntr(s1, 22, 3) or
+                    bitnumIntr(s0, 22, 2) or
+                    bitnumIntr(s1, 30, 1) or
+                    bitnumIntr(s0, 30, 0)
+                ).toByte()
+        out[offset + 1] =
+            (
+                bitnumIntr(s1, 5, 7) or bitnumIntr(s0, 5, 6) or bitnumIntr(s1, 13, 5) or bitnumIntr(s0, 13, 4) or bitnumIntr(s1, 21, 3) or
+                    bitnumIntr(s0, 21, 2) or
+                    bitnumIntr(s1, 29, 1) or
+                    bitnumIntr(s0, 29, 0)
+                ).toByte()
+        out[offset + 0] =
+            (
+                bitnumIntr(s1, 4, 7) or bitnumIntr(s0, 4, 6) or bitnumIntr(s1, 12, 5) or bitnumIntr(s0, 12, 4) or bitnumIntr(s1, 20, 3) or
+                    bitnumIntr(s0, 20, 2) or
+                    bitnumIntr(s1, 28, 1) or
+                    bitnumIntr(s0, 28, 0)
+                ).toByte()
+        out[offset + 7] =
+            (
+                bitnumIntr(s1, 3, 7) or bitnumIntr(s0, 3, 6) or bitnumIntr(s1, 11, 5) or bitnumIntr(s0, 11, 4) or bitnumIntr(s1, 19, 3) or
+                    bitnumIntr(s0, 19, 2) or
+                    bitnumIntr(s1, 27, 1) or
+                    bitnumIntr(s0, 27, 0)
+                ).toByte()
+        out[offset + 6] =
+            (
+                bitnumIntr(s1, 2, 7) or bitnumIntr(s0, 2, 6) or bitnumIntr(s1, 10, 5) or bitnumIntr(s0, 10, 4) or bitnumIntr(s1, 18, 3) or
+                    bitnumIntr(s0, 18, 2) or
+                    bitnumIntr(s1, 26, 1) or
+                    bitnumIntr(s0, 26, 0)
+                ).toByte()
+        out[offset + 5] =
+            (
+                bitnumIntr(s1, 1, 7) or bitnumIntr(s0, 1, 6) or bitnumIntr(s1, 9, 5) or bitnumIntr(s0, 9, 4) or bitnumIntr(s1, 17, 3) or
+                    bitnumIntr(s0, 17, 2) or
+                    bitnumIntr(s1, 25, 1) or
+                    bitnumIntr(s0, 25, 0)
+                ).toByte()
+        out[offset + 4] =
+            (
+                bitnumIntr(s1, 0, 7) or bitnumIntr(s0, 0, 6) or bitnumIntr(s1, 8, 5) or bitnumIntr(s0, 8, 4) or bitnumIntr(s1, 16, 3) or
+                    bitnumIntr(s0, 16, 2) or
+                    bitnumIntr(s1, 24, 1) or
+                    bitnumIntr(s0, 24, 0)
+                ).toByte()
     }
 
     private fun desF(state: Int, key: IntArray): Int {
@@ -205,20 +253,18 @@ object QrcDecoder {
         return schedule
     }
 
-    private fun tripleDesKeySetup(key: ByteArray, mode: Int): Array<Array<IntArray>> {
-        return if (mode == DES_ENCRYPT) {
-            arrayOf(
-                keySchedule(key, 0, DES_ENCRYPT),
-                keySchedule(key, 8, DES_DECRYPT),
-                keySchedule(key, 16, DES_ENCRYPT),
-            )
-        } else {
-            arrayOf(
-                keySchedule(key, 16, DES_DECRYPT),
-                keySchedule(key, 8, DES_ENCRYPT),
-                keySchedule(key, 0, DES_DECRYPT),
-            )
-        }
+    private fun tripleDesKeySetup(key: ByteArray, mode: Int): Array<Array<IntArray>> = if (mode == DES_ENCRYPT) {
+        arrayOf(
+            keySchedule(key, 0, DES_ENCRYPT),
+            keySchedule(key, 8, DES_DECRYPT),
+            keySchedule(key, 16, DES_ENCRYPT),
+        )
+    } else {
+        arrayOf(
+            keySchedule(key, 16, DES_DECRYPT),
+            keySchedule(key, 8, DES_ENCRYPT),
+            keySchedule(key, 0, DES_DECRYPT),
+        )
     }
 
     private fun tripleDesCrypt(input: ByteArray, inOffset: Int, schedule: Array<Array<IntArray>>, output: ByteArray, outOffset: Int) {
