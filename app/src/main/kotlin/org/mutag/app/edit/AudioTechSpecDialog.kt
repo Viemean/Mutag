@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -91,10 +90,7 @@ fun AudioTechSpecDialog(
                 TechSpecRow(label = "标签规范", value = spec?.tagVersion?.ifBlank { "未知" } ?: "未知")
                 TechSpecRow(label = "封面规格", value = coverInfo)
 
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 4.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                )
+                Spacer(modifier = Modifier.height(4.dp))
 
                 // 文件路径与复制小按钮
                 Column(modifier = Modifier.fillMaxWidth()) {

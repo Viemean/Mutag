@@ -21,7 +21,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -192,21 +191,13 @@ fun BatchRenameDialog(
                                         }
                                         innerTextField()
                                     }
-                                    HorizontalDivider(
-                                        thickness = 1.dp,
-                                        color = if (isCustom) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                                    )
                                 }
                             },
                         )
                     }
                 }
 
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-                    modifier = Modifier.padding(vertical = 6.dp),
-                )
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
                     modifier = Modifier
@@ -249,11 +240,7 @@ fun BatchRenameDialog(
                     )
                 }
 
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
-                    modifier = Modifier.padding(vertical = 6.dp),
-                )
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = "参数定义：",
