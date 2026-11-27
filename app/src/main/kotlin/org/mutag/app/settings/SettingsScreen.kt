@@ -210,21 +210,6 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    Text(
-                        text = "多艺术家连接符号",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    SegmentedSeparatorSelector(
-                        selectedSeparator = state.artistSeparator,
-                        onSeparatorSelected = viewModel::setArtistSeparator,
-                    )
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
                     SettingsSwitchRow(
                         icon = Icons.Rounded.HighQuality,
                         title = "获取原图封面",
@@ -975,25 +960,6 @@ private fun SegmentedSourceSelector(selectedSource: MetadataSource, onSourceSele
                 color = contentColor,
             )
         }
-    }
-}
-
-@Composable
-private fun SegmentedSeparatorSelector(selectedSeparator: String, onSeparatorSelected: (String) -> Unit) {
-    val separators = remember { listOf(" / ", "; ", ", ") }
-    SlidingSegmentedControl(
-        items = separators,
-        selectedItem = selectedSeparator,
-        onItemSelected = onSeparatorSelected,
-        height = 44.dp,
-        padding = 3.dp,
-    ) { sep, isSelected, contentColor ->
-        Text(
-            text = "\"$sep\"",
-            fontSize = 13.sp,
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
-            color = contentColor,
-        )
     }
 }
 

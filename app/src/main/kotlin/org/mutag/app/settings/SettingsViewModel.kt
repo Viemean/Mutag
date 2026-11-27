@@ -66,15 +66,6 @@ class SettingsViewModel : ViewModel() {
     }
 
     /**
-     * 更新多艺术家展示分割符。
-     *
-     * @param separator 分割符文本
-     */
-    fun setArtistSeparator(separator: String) {
-        AppSettingsManager.setArtistSeparator(separator)
-    }
-
-    /**
      * 更新是否优先下载母带原图封面配置。
      *
      * @param enabled 是否优先下载母带原图

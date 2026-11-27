@@ -62,7 +62,6 @@ val DEFAULT_THEME_PRESETS = listOf(
  * @param isCustomThemeColor 是否为用户自定义输入色彩
  * @param preferredSource 首选在线数据源
  * @param dualSourceFallback 是否启用双源 fallback 重试机制
- * @param artistSeparator 艺术家分割符
  * @param fetchOriginalMasterCover 是否优先获取母带级原图封面
  * @param lyricsSavePolicy 歌词持久化策略
  * @param autoMergeTranslation 是否自动合并歌词翻译
@@ -79,7 +78,6 @@ data class SettingsState(
     val isCustomThemeColor: Boolean = false,
     val preferredSource: MetadataSource = MetadataSource.QQ_MUSIC,
     val dualSourceFallback: Boolean = true,
-    val artistSeparator: String = " / ",
     val fetchOriginalMasterCover: Boolean = true,
     val lyricsSavePolicy: LyricsSavePolicy = LyricsSavePolicy.EMBED_ONLY,
     val autoMergeTranslation: Boolean = true,

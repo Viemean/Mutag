@@ -21,7 +21,6 @@ object AppSettingsManager {
     private const val KEY_IS_CUSTOM_THEME_COLOR = "is_custom_theme_color"
     private const val KEY_PREFERRED_SOURCE = "preferred_source"
     private const val KEY_DUAL_SOURCE_FALLBACK = "dual_source_fallback"
-    private const val KEY_ARTIST_SEPARATOR = "artist_separator"
     private const val KEY_FETCH_ORIGINAL_COVER = "fetch_original_cover"
     private const val KEY_LYRICS_SAVE_POLICY = "lyrics_save_policy"
     private const val KEY_AUTO_MERGE_TRANSLATION = "auto_merge_translation"
@@ -55,7 +54,6 @@ object AppSettingsManager {
         val preferredSource = runCatching { MetadataSource.valueOf(sourceName) }.getOrDefault(MetadataSource.QQ_MUSIC)
         val dualSourceFallback = sp.getBoolean(KEY_DUAL_SOURCE_FALLBACK, true)
 
-        val artistSeparator = sp.getString(KEY_ARTIST_SEPARATOR, " / ") ?: " / "
         val fetchOriginalCover = sp.getBoolean(KEY_FETCH_ORIGINAL_COVER, true)
 
         val policyName = sp.getString(KEY_LYRICS_SAVE_POLICY, LyricsSavePolicy.EMBED_ONLY.name) ?: LyricsSavePolicy.EMBED_ONLY.name
@@ -74,7 +72,6 @@ object AppSettingsManager {
             isCustomThemeColor = isCustomThemeColor,
             preferredSource = preferredSource,
             dualSourceFallback = dualSourceFallback,
-            artistSeparator = artistSeparator,
             fetchOriginalMasterCover = fetchOriginalCover,
             lyricsSavePolicy = lyricsSavePolicy,
             autoMergeTranslation = autoMergeTranslation,
@@ -146,16 +143,6 @@ object AppSettingsManager {
     fun setDualSourceFallback(enabled: Boolean) {
         _settingsState.update { it.copy(dualSourceFallback = enabled) }
         prefs?.edit()?.putBoolean(KEY_DUAL_SOURCE_FALLBACK, enabled)?.apply()
-    }
-
-    /**
-     * 设置多艺术家合并展示分割符。
-     *
-     * @param separator 分割符文本
-     */
-    fun setArtistSeparator(separator: String) {
-        _settingsState.update { it.copy(artistSeparator = separator) }
-        prefs?.edit()?.putString(KEY_ARTIST_SEPARATOR, separator)?.apply()
     }
 
     /**
