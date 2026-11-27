@@ -8,7 +8,11 @@ plugins {
 
 android {
     namespace = "org.mutag.app"
-    compileSdk = 37
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 2
+        }
+    }
 
     defaultConfig {
         applicationId = "org.mutag.app"

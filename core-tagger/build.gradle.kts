@@ -5,7 +5,11 @@ plugins {
 
 android {
     namespace = "org.mutag.core.tagger"
-    compileSdk = 37
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 2
+        }
+    }
 
     defaultConfig {
         minSdk = 28
