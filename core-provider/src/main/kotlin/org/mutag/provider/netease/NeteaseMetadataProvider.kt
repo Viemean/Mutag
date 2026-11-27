@@ -1,20 +1,25 @@
 package org.mutag.provider.netease
 
+import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
+import kotlinx.serialization.json.put
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -25,6 +30,7 @@ import org.mutag.model.SyncedLyrics
 import org.mutag.model.TrackMetadata
 import org.mutag.provider.api.CoverResolution
 import org.mutag.provider.api.MusicMetadataProvider
+import org.mutag.provider.lyric.EnhancedLrcConverter
 import org.mutag.provider.lyric.LyricCreditsParser
 import org.mutag.provider.lyric.LyricMerger
 
@@ -214,17 +220,7 @@ class NeteaseMetadataProvider(private val client: OkHttpClient = defaultClient) 
     ): Result<SyncedLyrics> = withContext(Dispatchers.IO) {
         runCatching {
             val targetId = if (trackId.isNotBlank()) trackId else songIdLong.toString()
-            val url = "$BASE_URL/api/song/lyric?os=pc&id=$targetId&lv=-1&kv=-1&tv=-1"
-            val request = Request.Builder()
-                .url(url)
-                .get()
-                .header("User-Agent", USER_AGENT)
-                .header("Referer", REFERER)
-                .header("Cookie", COOKIE)
-                .build()
-
-            val response = client.newCall(request).execute()
-            val bodyString = response.body.string()
+            val bodyString = fetchYrcLyricsBody(targetId) ?: fetchLegacyLyricsBody(targetId)
             if (bodyString.isBlank()) {
                 return@runCatching LyricMerger.merge("", null)
             }
@@ -232,9 +228,80 @@ class NeteaseMetadataProvider(private val client: OkHttpClient = defaultClient) 
             val root = json.parseToJsonElement(bodyString).jsonObject
             val lrcText = root["lrc"]?.jsonObject?.get("lyric")?.jsonPrimitive?.contentOrNull.orEmpty()
             val tlyricText = root["tlyric"]?.jsonObject?.get("lyric")?.jsonPrimitive?.contentOrNull.orEmpty()
+            val yrcText = root["yrc"]?.jsonObject?.get("lyric")?.jsonPrimitive?.contentOrNull.orEmpty()
+            val ytlrcText = root["ytlrc"]?.jsonObject?.get("lyric")?.jsonPrimitive?.contentOrNull.orEmpty()
 
-            LyricMerger.merge(lrcText, tlyricText.ifBlank { null })
+            val standardLyrics = LyricMerger.merge(lrcText, tlyricText.ifBlank { null })
+            val yrcSynced = EnhancedLrcConverter.fromYrc(
+                yrcRaw = yrcText,
+                transLrc = ytlrcText.ifBlank { tlyricText.ifBlank { null } },
+            )
+            if (yrcSynced != null) {
+                if (standardLyrics.rawLyricText.isNotBlank()) {
+                    standardLyrics.copy(enhancedLrcText = yrcSynced.enhancedLrcText)
+                } else {
+                    yrcSynced
+                }
+            } else {
+                standardLyrics
+            }
         }
+    }
+
+    private fun fetchYrcLyricsBody(targetId: String): String? {
+        return try {
+            val payload = buildJsonObject {
+                put("id", targetId)
+                put("cp", false)
+                put("radio", false)
+                put("cv", 4747474)
+                put("kv", -1)
+                put("tv", -1)
+                put("lv", -1)
+                put("yv", -1)
+                put("rv", -1)
+                put("st", 0)
+            }.toString()
+            val encryptedParams = buildEapiParams("/api/song/lyric/v1", payload)
+            val formBody = FormBody.Builder().add("params", encryptedParams).build()
+            val request = Request.Builder()
+                .url("https://interface3.music.163.com/eapi/song/lyric/v1")
+                .post(formBody)
+                .header("User-Agent", USER_AGENT)
+                .header("Referer", REFERER)
+                .header("Cookie", "os=pc; appver=8.9.70")
+                .build()
+            client.newCall(request).execute().use { resp ->
+                if (!resp.isSuccessful) return null
+                resp.body.string().takeIf { it.isNotBlank() }
+            }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun fetchLegacyLyricsBody(targetId: String): String {
+        val url = "$BASE_URL/api/song/lyric?os=pc&id=$targetId&lv=-1&kv=-1&tv=-1"
+        val request = Request.Builder()
+            .url(url)
+            .get()
+            .header("User-Agent", USER_AGENT)
+            .header("Referer", REFERER)
+            .header("Cookie", COOKIE)
+            .build()
+        return client.newCall(request).execute().use { resp ->
+            resp.body.string()
+        }
+    }
+
+    private fun buildEapiParams(path: String, payloadJson: String): String {
+        val digestBytes = MessageDigest.getInstance("MD5")
+            .digest("nobody${path}use${payloadJson}md5forencrypt".toByteArray(Charsets.UTF_8))
+        val digestHex = digestBytes.joinToString("") { "%02x".format(it) }
+        val raw = "$path-36cd479b6b5-$payloadJson-36cd479b6b5-$digestHex".toByteArray(Charsets.UTF_8)
+        val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+        cipher.init(Cipher.ENCRYPT_MODE, SecretKeySpec("e82ckenh8dichen8".toByteArray(Charsets.UTF_8), "AES"))
+        return cipher.doFinal(raw).joinToString("") { "%02X".format(it) }
     }
 
     override suspend fun recognizeByAcoustic(feature: AcousticFeature): Result<TrackMetadata?> = withContext(Dispatchers.IO) {

@@ -66,6 +66,7 @@ val DEFAULT_THEME_PRESETS = listOf(
  * @param fetchOriginalMasterCover 是否优先获取母带级原图封面
  * @param lyricsSavePolicy 歌词持久化策略
  * @param autoMergeTranslation 是否自动合并歌词翻译
+ * @param enhancedLrc 是否启用增强型逐字 LRC 格式
  * @param ignoreShortAudio 是否过滤短音频文件
  * @param ignoreVideoFiles 是否过滤视频文件
  * @param excludedDirectories 排除扫描的文件夹路径列表
@@ -82,6 +83,7 @@ data class SettingsState(
     val fetchOriginalMasterCover: Boolean = true,
     val lyricsSavePolicy: LyricsSavePolicy = LyricsSavePolicy.EMBED_ONLY,
     val autoMergeTranslation: Boolean = true,
+    val enhancedLrc: Boolean = false,
     val ignoreShortAudio: Boolean = true,
     val ignoreVideoFiles: Boolean = true,
     val excludedDirectories: List<String> = emptyList(),

@@ -102,6 +102,15 @@ class SettingsViewModel : ViewModel() {
     }
 
     /**
+     * 更新增强型 LRC 开关配置。
+     *
+     * @param enabled 是否启用增强型 LRC 格式
+     */
+    fun setEnhancedLrc(enabled: Boolean) {
+        AppSettingsManager.setEnhancedLrc(enabled)
+    }
+
+    /**
      * 更新短音频过滤配置。
      *
      * @param enabled 是否过滤短音频

@@ -18,6 +18,7 @@ import org.mutag.app.MuTagApplication
 import org.mutag.app.main.rename.BatchRenameExecutor
 import org.mutag.app.media.MediaScanHelper
 import org.mutag.app.notification.MatchingNotificationHelper
+import org.mutag.app.settings.AppSettingsManager
 import org.mutag.app.ui.cover.CoverDownloadHelper
 import org.mutag.app.ui.cover.EmbeddedCoverFetcher
 import org.mutag.core.tagger.scanner.AudioFileScanner
@@ -504,7 +505,7 @@ class MainViewModel : ViewModel() {
             replayGainTrackPeak = detail.replayGain?.trackPeak ?: item.localFile.replayGainTrackPeak,
             language = detail.language.ifBlank { item.localFile.language },
             chorusStartMs = if (detail.chorusStartMs > 0) detail.chorusStartMs else item.localFile.chorusStartMs,
-            lyrics = detail.lyrics?.mergedLrcText ?: detail.lyrics?.rawLyricText ?: item.localFile.lyrics,
+            lyrics = detail.lyrics?.preferredText(AppSettingsManager.settingsState.value.enhancedLrc) ?: item.localFile.lyrics,
             coverBytes = coverBytes,
         )
 
@@ -717,7 +718,7 @@ class MainViewModel : ViewModel() {
             replayGainTrackPeak = detail.replayGain?.trackPeak ?: track.replayGainTrackPeak,
             language = detail.language.ifBlank { track.language },
             chorusStartMs = if (detail.chorusStartMs > 0) detail.chorusStartMs else track.chorusStartMs,
-            lyrics = detail.lyrics?.mergedLrcText ?: detail.lyrics?.rawLyricText ?: track.lyrics,
+            lyrics = detail.lyrics?.preferredText(AppSettingsManager.settingsState.value.enhancedLrc) ?: track.lyrics,
             coverBytes = coverBytes,
         )
 

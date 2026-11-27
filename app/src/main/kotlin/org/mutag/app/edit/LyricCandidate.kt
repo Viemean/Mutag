@@ -1,5 +1,7 @@
 package org.mutag.app.edit
 
+import org.mutag.model.SyncedLyrics
+
 /**
  * 歌词搜索结果候选实体。
  *
@@ -11,7 +13,8 @@ package org.mutag.app.edit
  * @param artist 艺术家名称
  * @param album 所属专辑名称
  * @param durationMs 音频总时长（毫秒）
- * @param lyrics 异步拉取后的完整 LRC 歌词文本，未拉取时为 null
+ * @param lyrics 异步拉取后的普通 LRC 预览文本，未拉取时为 null
+ * @param syncedLyrics 异步拉取后的完整同步歌词对象（含标准与增强型 LRC），未拉取时为 null
  * @param isPureMusic 是否为纯音乐或无有效填词
  * @param isLoadingLyrics 歌词是否正在异步加载中
  * @param isExpanded 歌词预览区域是否展开
@@ -26,6 +29,7 @@ data class LyricCandidate(
     val album: String,
     val durationMs: Long,
     val lyrics: String? = null,
+    val syncedLyrics: SyncedLyrics? = null,
     val isPureMusic: Boolean = false,
     val isLoadingLyrics: Boolean = false,
     val isExpanded: Boolean = false,

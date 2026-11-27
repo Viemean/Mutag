@@ -560,7 +560,7 @@ class EditViewModel : ViewModel() {
                     replayGainTrackGain = enriched.replayGain?.let { "%.2f".format(it.trackGainDb) } ?: it.replayGainTrackGain,
                     replayGainTrackPeak = enriched.replayGain?.let { "%.6f".format(it.trackPeak) } ?: it.replayGainTrackPeak,
                     lyrics = if (fields["lyrics"] == true && lyricsObj != null) {
-                        if (lyricsObj.mergedLrcText.isNotBlank()) lyricsObj.mergedLrcText else lyricsObj.rawLyricText
+                        lyricsObj.preferredText(AppSettingsManager.settingsState.value.enhancedLrc)
                     } else {
                         it.lyrics
                     },
@@ -1082,8 +1082,8 @@ class EditViewModel : ViewModel() {
                 durationSec = (target.durationMs / 1000).toInt(),
             ).getOrNull()
 
-            val lrcText = lyricsRes?.mergedLrcText.orEmpty()
-            val isPure = org.mutag.provider.lyric.PureMusicDetector.isPureMusic(lrcText)
+            val previewLrc = lyricsRes?.preferredText(useEnhanced = false).orEmpty()
+            val isPure = org.mutag.provider.lyric.PureMusicDetector.isPureMusic(previewLrc)
 
             if (isPure) {
                 // 纯音乐直接从候选列表中剔除，不予显示
@@ -1103,7 +1103,8 @@ class EditViewModel : ViewModel() {
                     lyricCandidates = state.lyricCandidates.map { c ->
                         if (c.id == target.id) {
                             c.copy(
-                                lyrics = lrcText,
+                                lyrics = previewLrc,
+                                syncedLyrics = lyricsRes,
                                 isPureMusic = false,
                                 isLoadingLyrics = false,
                                 isExpanded = true,
@@ -1140,7 +1141,10 @@ class EditViewModel : ViewModel() {
      */
     fun applyLyricCandidate(candidate: LyricCandidate) {
         viewModelScope.launch(Dispatchers.IO) {
-            val lrcText = if (candidate.lyrics != null) {
+            val useEnhanced = AppSettingsManager.settingsState.value.enhancedLrc
+            val lrcText = if (candidate.syncedLyrics != null) {
+                candidate.syncedLyrics.preferredText(useEnhanced)
+            } else if (candidate.lyrics != null) {
                 candidate.lyrics
             } else {
                 val provider = if (candidate.sourceId == "netease") {
@@ -1154,7 +1158,7 @@ class EditViewModel : ViewModel() {
                     title = candidate.title,
                     artist = candidate.artist,
                     durationSec = (candidate.durationMs / 1000).toInt(),
-                ).getOrNull()?.mergedLrcText.orEmpty()
+                ).getOrNull()?.preferredText(useEnhanced).orEmpty()
             }
 
             val isPure = org.mutag.provider.lyric.PureMusicDetector.isPureMusic(lrcText)

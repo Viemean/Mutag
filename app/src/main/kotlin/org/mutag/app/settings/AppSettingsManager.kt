@@ -25,6 +25,7 @@ object AppSettingsManager {
     private const val KEY_FETCH_ORIGINAL_COVER = "fetch_original_cover"
     private const val KEY_LYRICS_SAVE_POLICY = "lyrics_save_policy"
     private const val KEY_AUTO_MERGE_TRANSLATION = "auto_merge_translation"
+    private const val KEY_ENHANCED_LRC = "enhanced_lrc"
     private const val KEY_IGNORE_SHORT_AUDIO = "ignore_short_audio"
     private const val KEY_IGNORE_VIDEO_FILES = "ignore_video_files"
 
@@ -61,6 +62,7 @@ object AppSettingsManager {
         val lyricsSavePolicy = runCatching { LyricsSavePolicy.valueOf(policyName) }.getOrDefault(LyricsSavePolicy.EMBED_ONLY)
 
         val autoMergeTranslation = sp.getBoolean(KEY_AUTO_MERGE_TRANSLATION, true)
+        val enhancedLrc = sp.getBoolean(KEY_ENHANCED_LRC, false)
         val ignoreShortAudio = sp.getBoolean(KEY_IGNORE_SHORT_AUDIO, true)
         val ignoreVideoFiles = sp.getBoolean(KEY_IGNORE_VIDEO_FILES, true)
 
@@ -76,6 +78,7 @@ object AppSettingsManager {
             fetchOriginalMasterCover = fetchOriginalCover,
             lyricsSavePolicy = lyricsSavePolicy,
             autoMergeTranslation = autoMergeTranslation,
+            enhancedLrc = enhancedLrc,
             ignoreShortAudio = ignoreShortAudio,
             ignoreVideoFiles = ignoreVideoFiles,
         )
@@ -183,6 +186,16 @@ object AppSettingsManager {
     fun setAutoMergeTranslation(enabled: Boolean) {
         _settingsState.update { it.copy(autoMergeTranslation = enabled) }
         prefs?.edit()?.putBoolean(KEY_AUTO_MERGE_TRANSLATION, enabled)?.apply()
+    }
+
+    /**
+     * 设置是否使用增强型逐字 LRC 格式。
+     *
+     * @param enabled 启用状态
+     */
+    fun setEnhancedLrc(enabled: Boolean) {
+        _settingsState.update { it.copy(enhancedLrc = enabled) }
+        prefs?.edit()?.putBoolean(KEY_ENHANCED_LRC, enabled)?.apply()
     }
 
     /**

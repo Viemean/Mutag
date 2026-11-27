@@ -112,6 +112,7 @@ data class ReplayGainInfo(val trackGainDb: Double, val trackPeak: Double, val lo
  * @param lines 解析后的各单行歌词列表
  * @param hasTranslation 是否包含翻译歌词
  * @param mergedLrcText 双语对齐合并后的 LRC 文本
+ * @param enhancedLrcText 增强型逐字 LRC 文本（无逐字数据时为空）
  */
 @Serializable
 data class SyncedLyrics(
@@ -119,7 +120,21 @@ data class SyncedLyrics(
     val lines: List<LyricLine> = emptyList(),
     val hasTranslation: Boolean = false,
     val mergedLrcText: String = "",
-)
+    val enhancedLrcText: String = "",
+) {
+    /**
+     * 按是否开启增强型 LRC 偏好返回对应的歌词文本。
+     * 若开启增强型 LRC 但当前曲目无逐字歌词，则自动回退到标准合并歌词或原始歌词。
+     */
+    fun preferredText(useEnhanced: Boolean): String =
+        if (useEnhanced && enhancedLrcText.isNotBlank()) {
+            enhancedLrcText
+        } else if (mergedLrcText.isNotBlank()) {
+            mergedLrcText
+        } else {
+            rawLyricText
+        }
+}
 
 /**
  * 单行同步时间轴歌词。

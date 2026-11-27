@@ -22,6 +22,7 @@ import org.mutag.model.SyncedLyrics
 import org.mutag.model.TrackMetadata
 import org.mutag.provider.api.CoverResolution
 import org.mutag.provider.api.MusicMetadataProvider
+import org.mutag.provider.lyric.EnhancedLrcConverter
 import org.mutag.provider.lyric.LyricCreditsParser
 import org.mutag.provider.lyric.LyricMerger
 
@@ -454,8 +455,17 @@ class QqMusicMetadataProvider(private val client: OkHttpClient = defaultClient) 
                 }
             }
 
-            LyricMerger.merge(rawLrc, transLrc)
+            EnhancedLrcConverter.fromQrc(rawLrc, transLrc.ifBlank { null })
+                ?: LyricMerger.merge(rawLrc, transLrc)
         }
+    }
+
+    private fun isHexCipher(s: String): Boolean =
+        s.length > 100 && s.all { it.isDigit() || it in 'a'..'f' || it in 'A'..'F' }
+
+    private fun decodeLyricField(raw: String): String {
+        if (raw.isBlank()) return ""
+        return if (isHexCipher(raw)) QrcDecoder.decodeQrc(raw) else decodeBase64Safe(raw)
     }
 
     private fun fetchDirectLyrics(trackId: String, songIdLong: Long): Pair<String, String> {
@@ -468,10 +478,11 @@ class QqMusicMetadataProvider(private val client: OkHttpClient = defaultClient) 
                 "param": {
                   "songMID": "$trackId",
                   "songID": $songIdLong,
-                  "qrc": 0,
+                  "qrc": 1,
                   "trans": 1,
                   "roma": 1,
-                  "isHQ": 1
+                  "isHQ": 1,
+                  "crypt": 1
                 }
               }
             }
@@ -494,11 +505,11 @@ class QqMusicMetadataProvider(private val client: OkHttpClient = defaultClient) 
 
         val root = Json.parseToJsonElement(body).jsonObject
         val lyricData = root["playLyricInfo"]?.jsonObject?.get("data")?.jsonObject
-        val rawLyricB64 = lyricData?.get("lyric")?.jsonPrimitive?.contentOrNull ?: ""
-        val transB64 = lyricData?.get("trans")?.jsonPrimitive?.contentOrNull ?: ""
+        val rawLyricField = lyricData?.get("lyric")?.jsonPrimitive?.contentOrNull ?: ""
+        val transField = lyricData?.get("trans")?.jsonPrimitive?.contentOrNull ?: ""
 
-        var rawLrc = decodeBase64Safe(rawLyricB64)
-        var transLrc = decodeBase64Safe(transB64)
+        var rawLrc = decodeLyricField(rawLyricField)
+        var transLrc = decodeLyricField(transField)
 
         if (rawLrc.isBlank()) {
             val fallback = getLyricsFallback(trackId)

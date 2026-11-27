@@ -264,7 +264,7 @@ object BatchMatchPipeline {
                                     replayGainTrackPeak = detail.replayGain?.trackPeak ?: track.replayGainTrackPeak,
                                     language = detail.language.ifBlank { track.language },
                                     chorusStartMs = if (detail.chorusStartMs > 0) detail.chorusStartMs else track.chorusStartMs,
-                                    lyrics = detail.lyrics?.mergedLrcText ?: detail.lyrics?.rawLyricText ?: track.lyrics,
+                                    lyrics = detail.lyrics?.preferredText(AppSettingsManager.settingsState.value.enhancedLrc) ?: track.lyrics,
                                     coverBytes = coverBytes,
                                 )
 

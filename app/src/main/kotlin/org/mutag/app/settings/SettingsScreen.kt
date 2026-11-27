@@ -41,6 +41,7 @@ import androidx.compose.material.icons.rounded.HighQuality
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Subtitles
 import androidx.compose.material.icons.rounded.Timelapse
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material.icons.rounded.VideocamOff
@@ -278,6 +279,16 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
                         subtitle = "获取歌词时自动将翻译合并入歌词文件",
                         checked = state.autoMergeTranslation,
                         onCheckedChange = viewModel::setAutoMergeTranslation,
+                    )
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    SettingsSwitchRow(
+                        icon = Icons.Rounded.Subtitles,
+                        title = "增强型LRC",
+                        subtitle = "保存歌词为逐字LRC格式，但无法兼容部分客户端",
+                        checked = state.enhancedLrc,
+                        onCheckedChange = viewModel::setEnhancedLrc,
                     )
                 }
             }
